@@ -11,6 +11,8 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "nativewind-env.d.ts",
+    "app/utils/dateUtils.js",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
