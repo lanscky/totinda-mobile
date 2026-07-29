@@ -1,278 +1,143 @@
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
+import { useRouter } from "expo-router";
+import { Lock, Mail } from "lucide-react-native";
+import { MotiView } from "moti";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
-  StyleSheet,
-  Text,
-  TextInput, TouchableOpacity,
+  TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { loginUser } from "./services/auth";
+
+import { useTranslation } from "react-i18next";
+import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
+import { Typography } from "../../components/Typography";
+import { useAuth } from "../../context/AuthContext";
+
 export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login, loading } = useAuth();
+  const router = useRouter();
 
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      Toast.show({
+        type: "error",
+        text1: t('login.missingFields'),
+        text2: t('login.fillAllFields'),
+      });
+      return;
+    }
 
-    const handleLogin = async () => {
-  try {
-    setLoading(true); // démarre le loader
-    const token = await loginUser(email, password);
-    console.log("Token :", token);
-    router.replace("/home/home");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Erreur inconnue";
-    Toast.show({
-      type: "error",
-      text1: "Échec de la connexion",
-      text2: message,
-      position: "top",
-    });
-  } finally {
-    setLoading(false); // arrête le loader
-  }
-};
+    try {
+      await login(email.trim(), password);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t('common.error');
+      Toast.show({
+        type: "error",
+        text1: t('login.loginFailed'),
+        text2: message,
+      });
+    }
+  };
 
   return (
-    <View style={{ flex: 1 }}>
-        <ScrollView>
-            <View style={styles.background}>
-                <ImageBackground
-                    source={require("../../assets/onboard/backlogin.png")}
-                    style={styles.backlogin}
-                    resizeMode="cover"
-                  >
-                    <View style={styles.header}>
-                      <Image
-                        source={require("../../assets/images/logo.png")}
-                        style={styles.logo}
-                      />
-                    </View>
-            </ImageBackground>
-            <View style={{ width: "100%",marginTop: 40,paddingHorizontal: 30, }} >
-                <Text style={styles.textgrand}>Heureux de vous revoir !</Text>  
-                <Text style={styles.textpetit}>Connectez-vous et commencez votre vie professionnelle !</Text>
-
-                {/* Champ Email */}
-        <View style={styles.inputContainer} className="mt-10">
-          <Ionicons name="mail-outline" size={20} color="#044EB8" />
-          <TextInput
-            style={styles.input}
-            placeholder="Adresse e-mail"
-            placeholderTextColor="#999"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        {/* Champ Mot de passe */}
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color="#044EB8" />
-          <TextInput
-            style={styles.input}
-            placeholder="Mot de passe"
-            placeholderTextColor="#999"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={{marginLeft: 5}}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={20}
-              color="#044EB8"
+    <View className="flex-1 bg-white">
+      <ImageBackground
+        source={require("../../assets/onboard/backlogin.png")}
+        className="h-64 justify-center"
+        resizeMode="cover"
+      >
+        <SafeAreaView>
+          <View className="px-6">
+            <Image
+              source={require("../../assets/images/logo.png")}
+              className="w-32 h-16"
+              resizeMode="contain"
             />
-          </TouchableOpacity>
-        </View>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
 
-        
-            <TouchableOpacity
-                style={{ overflow: "hidden", marginBottom: 10 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === "ios" ? -64 : 0}
+      >
+        <ScrollView
+          className="flex-1 -mt-10 bg-white rounded-t-[40px] px-8 pt-10"
+          showsVerticalScrollIndicator={false}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 600 }}
+          >
+            <Typography variant="h1" font="maven" weight="bold" className="text-secondary">
+              {t('login.welcome')}
+            </Typography>
+            <Typography variant="body" font="noto" weight="reg" className="text-gray-500 mt-2">
+              {t('login.subtitle')}
+            </Typography>
+
+            <View className="mt-10">
+              <Input
+                label={t('login.emailLabel')}
+                placeholder={t('login.emailPlaceholder')}
+                value={email}
+                onChangeText={setEmail}
+                icon={Mail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+              />
+
+              <Input
+                label={t('login.passwordLabel')}
+                placeholder={t('login.passwordPlaceholder')}
+                value={password}
+                onChangeText={setPassword}
+                icon={Lock}
+                secureTextEntry
+                autoComplete="current-password"
+                textContentType="password"
+              />
+
+              <Button
+                title={t('login.loginButton')}
+                variant="gradient"
                 onPress={handleLogin}
-                disabled={loading} // désactive le bouton pendant le chargement
-                >
-                <LinearGradient
-                    colors={["#044EB8", "#1B81CA"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.button}
-                >
-                    {loading ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                    <Text style={styles.buttonText}>Se connecter</Text>
-                    )}
-                </LinearGradient>
-                </TouchableOpacity>
-                <Toast />
-
-            <Text style={styles.or}>Ou</Text>
-
-            {/* Boutons de réseaux sociaux */}
-            <View style={styles.socialContainer}>
-                
-               
-                <TouchableOpacity style={[styles.socialButton, ]}>
-                    <Image
-                    source={require("../../assets/icons/google.png")}
-                    style={[styles.icon]}
-                />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.socialButton, ]}>
-                    <Image
-                        source={require("../../assets/icons/facebook.png")}
-                        style={[styles.icon]}
-                    />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.socialButton, ]}>
-                    <Image
-                        source={require("../../assets/icons/apple.png")}
-                        style={[styles.icon]}
-                    />
-                </TouchableOpacity>
-                
+                loading={loading}
+                className="mt-8"
+              />
             </View>
 
-            {/* <Text className="text-base mt-12 ml-4 text-slate-900">
-              Vous n’avez pas de compte ?{" "}
-              <Text className="font-black">
-                <Link href="/login/register">Inscrivez-vous</Link>
-              </Text>
-            </Text> */}
-            <Text className="text-base mt-12 ml-4 text-slate-900">
-              Vous n’avez pas de compte ?{" "}
-              <Text
-                className="font-black text-blue-600"
-                onPress={() => WebBrowser.openBrowserAsync("https://www.totinda.com/register")}
+            <View className="flex-row justify-center mt-10 mb-10">
+              <Typography variant="body" font="noto" className="text-gray-600">
+                {t('login.noAccount')}{" "}
+              </Typography>
+              <TouchableOpacity
+                onPress={() => router.push("/login/register")}
+                accessibilityRole="link"
               >
-                Inscrivez-vous
-              </Text>
-            </Text>
-
+                <Typography variant="body" font="noto" weight="bold" className="text-primary">
+                  {t('login.register')}
+                </Typography>
+              </TouchableOpacity>
             </View>
-            </View>
-            
+          </MotiView>
         </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    marginTop:20
-  },
-  backlogin: {
-    width: "100%",
-    marginTop:20
-  
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    
-    marginHorizontal: 15,
-    alignItems: "center",
-  },
-  logo: {
-    width: 130,
-    height: 100,
-    resizeMode: "contain",
-    marginTop: 1,
-  },
-   textgrand: {
-    fontSize: 26,
-    fontFamily: "MavenPro-Bold",
-    color: "#1D2633",
-   
-    
-  },
-  textpetit: {
-    fontSize: 15,
-    marginTop: 15,
-    fontFamily: "NotoSans-Regular",
-    color: "#1D2633",
-
-    marginBottom:30
-  },
-
-  button: {
-   
-    width: "100%",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
-    
-  },
-  buttonText: {
-  color: "#fff",             // ✅ texte blanc
-  textTransform: "uppercase", // ✅ met le texte en majuscules
-  fontFamily: "NotoSans-Bold",
-  
-},
-or: {
-
-    textAlign: "center",
-    color: "#888",
-    marginBottom: 30,
-    marginTop:20,
-    fontFamily: "NotoSans-Regular",
-    fontSize: 14,
-  },
-  socialContainer: {
-  flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 60,
-    width: "100%",
-    marginTop: 10,
-   
-  },
-  socialButton: {
-  
-    marginHorizontal: 5,
-    paddingTop: 15,
-    alignItems: "center",
-  },
-    icon: {
-    width: 20,
-    height: 20,
-    resizeMode: "contain",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 7,
-    marginBottom: 20,
-    width: "100%",
-    backgroundColor: "#f9f9f9",
-  },
- input: {
-    flex: 1,
-    marginLeft: 10,
-    color: "#000",
-    fontFamily: "NotoSans-Regular",
-  },
-});

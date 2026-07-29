@@ -1,12 +1,11 @@
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
 import {
   Briefcase,
   Camera,
   Edit3,
+  Languages,
   LogOut,
   Mail,
   PhoneCall,
@@ -14,8 +13,10 @@ import {
   User
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ImageBackground,
   Modal,
@@ -24,88 +25,113 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
+import { User as AuthUser } from "../../api/auth";
+import { apiRequest } from "../../api/client";
+import { Button } from "../../components/Button";
+import { useAuth } from "../../context/AuthContext";
+
+type PendingPhoto = {
+  uri: string;
+  name: string;
+  type: string;
+};
 
 export default function Profil() {
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
+  const { user, logout, updateUser, loading } = useAuth();
+  const [userInfo, setUserInfo] = useState<AuthUser | null>(user);
   const [modalVisible, setModalVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingCV, setUploadingCV] = useState(false);
   const [cvName, setCvName] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<PendingPhoto | null>(null);
 
   useEffect(() => {
-    const loadUserInfo = async () => {
-      const data = await AsyncStorage.getItem("user_info");
-      if (data) {
-        setUserInfo(JSON.parse(data));
-      }
-      setLoading(false);
-    };
-    loadUserInfo();
-  }, []);
+    setUserInfo(user);
+  }, [user]);
 
-  const handleLogout = async () => {
-    await AsyncStorage.multiRemove(["access_token", "refresh_token", "user_info"]);
-    router.replace("/login/login");
+  const handleLogout = () => {
+    Alert.alert(t("profile.logout"), t("profile.logoutConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("profile.logout"),
+        style: "destructive",
+        onPress: () => void logout(),
+      },
+    ]);
   };
 
   // === GESTION DE L'IMAGE ===
   const pickImage = async (fromCamera: boolean) => {
     try {
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      const permissionResult = fromCamera
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        alert("Permission refusée !");
+        Alert.alert(t("common.error"), t("profile.permissionDenied"));
         return;
       }
 
       const result = fromCamera
-        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 })
-        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+        ? await ImagePicker.launchCameraAsync({ allowsEditing: false, quality: 0.8 })
+        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: false, quality: 0.8 });
 
       if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        await uploadProfilePicture(uri);
+        const asset = result.assets[0];
+        setSelectedPhoto({
+          uri: asset.uri,
+          name: asset.fileName ?? `profile-${Date.now()}.jpg`,
+          type: asset.mimeType ?? "image/jpeg",
+        });
       }
-    } catch (err) {
-      console.error("Erreur image picker :", err);
-    } finally {
-      setModalVisible(false);
+    } catch {
+      Toast.show({ type: "error", text1: t("common.error"), text2: t("profile.imageError") });
     }
   };
 
-  const uploadProfilePicture = async (uri: string) => {
+  const closePhotoModal = () => {
+    if (uploading) return;
+    setSelectedPhoto(null);
+    setModalVisible(false);
+  };
+
+  const uploadProfilePicture = async (photo: PendingPhoto) => {
     setUploading(true);
-    const token = await AsyncStorage.getItem("access_token");
-    if (!token) return alert("Token manquant");
+    if (!userInfo?.id) {
+      setUploading(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("profile_picture", {
-      uri,
-      name: "profile.jpg",
-      type: "image/jpeg",
+      uri: photo.uri,
+      name: photo.name,
+      type: photo.type,
     } as any);
 
     try {
-      const response = await fetch(`https://backend.totinda.com/api/users/${userInfo?.id}/`, {
+      const updatedUser = await apiRequest<AuthUser>(`users/${userInfo.id}/`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
         body: formData,
       });
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUserInfo(updatedUser);
-        await AsyncStorage.setItem("user_info", JSON.stringify(updatedUser));
-        alert("✅ Photo mise à jour !");
-      } else {
-        alert("❌ Erreur lors de la mise à jour de la photo");
-      }
+      const mergedUser: AuthUser = {
+        ...userInfo,
+        ...updatedUser,
+        student: updatedUser.student ?? userInfo.student,
+      };
+      setUserInfo(mergedUser);
+      await updateUser(mergedUser);
+      setSelectedPhoto(null);
+      setModalVisible(false);
+      Toast.show({ type: "success", text1: t("common.success"), text2: t("profile.photoUpdated") });
     } catch (error) {
-      console.error("Erreur réseau :", error);
-      alert("Erreur de connexion au serveur");
+      Toast.show({
+        type: "error",
+        text1: t("common.error"),
+        text2: error instanceof Error ? error.message : t("common.networkError"),
+      });
     } finally {
       setUploading(false);
     }
@@ -124,58 +150,62 @@ export default function Profil() {
       setCvName(file.name);
       await uploadCV(file.uri, file.name, file.mimeType || "application/pdf");
     } catch (error) {
-      console.error("Erreur sélection CV :", error);
+      Toast.show({
+        type: "error",
+        text1: t("common.error"),
+        text2: error instanceof Error ? error.message : t("common.networkError"),
+      });
     }
   };
 
   const uploadCV = async (uri: string, name: string, type: string) => {
     setUploadingCV(true);
-    const token = await AsyncStorage.getItem("access_token");
-    if (!token) return alert("Token manquant");
-
     const studentId = userInfo?.student?.id_student;
+    if (!studentId) {
+      setUploadingCV(false);
+      Toast.show({ type: "error", text1: t("common.error"), text2: t("offres.incompleteProfile") });
+      return;
+    }
 
     const formData = new FormData();
     formData.append("cv", { uri, name, type } as any);
 
     try {
-      const response = await fetch(`https://backend.totinda.com/api/students/${studentId}/`, {
+      const updatedStudent = await apiRequest<{ cv?: string }>(`students/${studentId}/`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
         body: formData,
       });
 
-      if (response.ok) {
-        const updatedStudent = await response.json();
-        // Mettre à jour l’objet user_info localement
-        const updated = {
-          ...userInfo,
-          student: { ...userInfo.student, cv: updatedStudent.cv },
-        };
-        setUserInfo(updated);
-        await AsyncStorage.setItem("user_info", JSON.stringify(updated));
-        alert("✅ CV mis à jour avec succès !");
-      } else {
-        const errTxt = await response.text();
-        console.log("Erreur upload CV:", errTxt);
-        alert("❌ Erreur lors de la mise à jour du CV");
-      }
+      const updated: AuthUser = {
+        ...userInfo,
+        student: { ...userInfo.student!, cv: updatedStudent.cv },
+      };
+      setUserInfo(updated);
+      await updateUser(updated);
+      Toast.show({ type: "success", text1: t("common.success"), text2: t("profile.cvUpdated") });
     } catch (error) {
-      console.error("Erreur réseau CV:", error);
-      alert("Erreur de connexion au serveur");
+      Toast.show({
+        type: "error",
+        text1: t("common.error"),
+        text2: error instanceof Error ? error.message : t("common.networkError"),
+      });
     } finally {
       setUploadingCV(false);
     }
   };
 
+  const changeLanguage = (lng: string) => {
+    void i18n.changeLanguage(lng);
+    setLanguageModalVisible(false);
+  };
+
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#044EB8" />
-        <Text className="mt-2 text-gray-700">Chargement du profil...</Text>
+        <Text className="mt-2 text-gray-700">{t('common.loading')}</Text>
       </View>
     );
   }
@@ -207,7 +237,10 @@ export default function Profil() {
             className="w-24 h-24 rounded-full"
           />
           <TouchableOpacity
-            onPress={() => setModalVisible(true)}
+            onPress={() => {
+              setSelectedPhoto(null);
+              setModalVisible(true);
+            }}
             className="absolute bottom-0 right-0 bg-[#044EB8] p-2 rounded-full"
           >
             <Edit3 color="white" size={18} />
@@ -221,24 +254,24 @@ export default function Profil() {
           className="text-center text-[#044EB8]"
           style={{ fontFamily: "MavenPro-SemiBold", fontSize: 20 }}
         >
-          {userInfo?.username || "Nom inconnu"} {userInfo?.prenom || ""}
+          {userInfo?.username || t('profile.unspecified')} {userInfo?.prenom || ""}
         </Text>
         <Text
           className="text-center text-gray-500 mt-1"
           style={{ fontFamily: "NotoSans-Regular", fontSize: 14 }}
         >
-          Étudiant - {userInfo?.student?.niveau || "niveau inconnu"}
+          {t('profile.student')} - {userInfo?.student?.niveau || t('profile.unknownLevel')}
         </Text>
 
         {/* Détails */}
         <View className="mt-8 space-y-4">
           {[
-            { icon: <User color="#044EB8" size={22} />, text: userInfo?.postnom || "Non précisé" },
-            { icon: <Mail color="#044EB8" size={22} />, text: userInfo?.email || "Email non disponible" },
-            { icon: <PhoneCall color="#044EB8" size={22} />, text: userInfo?.telephone || "Téléphone non disponible" },
-            { icon: <Briefcase color="#044EB8" size={22} />, text: userInfo?.student?.formation || "Formation non spécifiée" },
+            { icon: <User color="#044EB8" size={22} />, text: userInfo?.postnom || t('profile.unspecified') },
+            { icon: <Mail color="#044EB8" size={22} />, text: userInfo?.email || t('profile.noEmail') },
+            { icon: <PhoneCall color="#044EB8" size={22} />, text: userInfo?.telephone || t('profile.noPhone') },
+            { icon: <Briefcase color="#044EB8" size={22} />, text: userInfo?.student?.filiere || userInfo?.student?.formation || t('profile.noFormation') },
           ].map((item, index) => (
-            <View key={index} className="flex-row items-center bg-gray-50 p-4 rounded-xl shadow-sm">
+            <View key={index} className="flex-row items-center bg-gray-50 p-4 rounded-xl shadow-sm mb-4">
               {item.icon}
               <Text
                 className="ml-3 text-gray-800"
@@ -250,13 +283,35 @@ export default function Profil() {
           ))}
         </View>
 
+        {/* LANGUE */}
+        <View className="mt-6">
+          <Text
+            className="text-gray-700 mb-2"
+            style={{ fontFamily: "MavenPro-SemiBold", fontSize: 16 }}
+          >
+            {t('profile.language')} :
+          </Text>
+          <TouchableOpacity
+            onPress={() => setLanguageModalVisible(true)}
+            className="flex-row items-center justify-between bg-gray-50 p-4 rounded-xl shadow-sm"
+          >
+            <View className="flex-row items-center">
+              <Languages color="#044EB8" size={22} />
+              <Text className="ml-3 text-gray-800" style={{ fontFamily: "NotoSans-Regular", fontSize: 15 }}>
+                {i18n.language === 'fr' ? 'Français' : (i18n.language === 'en' ? 'English' : 'Lingala')}
+              </Text>
+            </View>
+            <Edit3 color="#044EB8" size={18} />
+          </TouchableOpacity>
+        </View>
+
         {/* UPLOAD CV */}
         <View className="mt-10 mb-4">
           <Text
             className="text-gray-700 mb-2"
             style={{ fontFamily: "MavenPro-SemiBold", fontSize: 16 }}
           >
-            Mon CV :
+            {t('profile.myCV')}
           </Text>
 
           <TouchableOpacity
@@ -270,7 +325,7 @@ export default function Profil() {
               <>
                 <Upload color="#044EB8" size={20} />
                 <Text className="ml-2 text-[#044EB8] text-[15px]">
-                  {cvName ? cvName : userInfo?.student?.cv ? "Changer mon CV" : "Ajouter mon CV"}
+                  {cvName ? cvName : userInfo?.student?.cv ? t('profile.changeCV') : t('profile.addCV')}
                 </Text>
               </>
             )}
@@ -278,7 +333,7 @@ export default function Profil() {
 
           {userInfo?.student?.cv && (
             <Text className="mt-2 text-center text-gray-500 text-sm">
-              📄 CV actuel : {userInfo.student.cv.split("/").pop()}
+              📄 {t('profile.currentCV')} {userInfo.student.cv.split("/").pop()}
             </Text>
           )}
         </View>
@@ -293,51 +348,107 @@ export default function Profil() {
             className="text-white ml-2"
             style={{ fontFamily: "NotoSans-SemiBold", fontSize: 16 }}
           >
-            Se déconnecter
+            {t('profile.logout')}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* MODAL PHOTO */}
-      <Modal visible={modalVisible} transparent animationType="slide">
+      <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={closePhotoModal}>
         <View className="flex-1 justify-end bg-black/50">
           <View className="bg-white rounded-t-3xl p-6">
             <Text
               className="text-center text-gray-800 mb-4"
               style={{ fontFamily: "MavenPro-SemiBold", fontSize: 18 }}
             >
-              Modifier la photo de profil
+              {t('profile.editPhoto')}
             </Text>
+
+            {selectedPhoto && (
+              <View className="items-center mb-5">
+                <Image
+                  source={{ uri: selectedPhoto.uri }}
+                  className="w-32 h-32 rounded-full"
+                  resizeMode="cover"
+                />
+                <Text className="mt-2 text-sm text-gray-500">
+                  {t("profile.photoPreview")}
+                </Text>
+              </View>
+            )}
 
             <TouchableOpacity
               onPress={() => pickImage(false)}
+              disabled={uploading}
               className="flex-row items-center bg-gray-100 p-4 rounded-xl mb-3"
             >
               <User color="#044EB8" size={22} />
-              <Text className="ml-3 text-gray-800 text-[15px]">Choisir depuis la galerie</Text>
+              <Text className="ml-3 text-gray-800 text-[15px]">{t('profile.gallery')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => pickImage(true)}
+              disabled={uploading}
               className="flex-row items-center bg-gray-100 p-4 rounded-xl mb-3"
             >
               <Camera color="#044EB8" size={22} />
-              <Text className="ml-3 text-gray-800 text-[15px]">Prendre une photo</Text>
+              <Text className="ml-3 text-gray-800 text-[15px]">{t('profile.camera')}</Text>
             </TouchableOpacity>
+
+            {selectedPhoto && (
+              <Button
+                title={t("profile.savePhoto")}
+                variant="gradient"
+                onPress={() => void uploadProfilePicture(selectedPhoto)}
+                loading={uploading}
+                className="mt-2"
+              />
+            )}
 
             <TouchableOpacity
-              onPress={() => setModalVisible(false)}
+              onPress={closePhotoModal}
+              disabled={uploading}
               className="bg-gray-200 p-3 rounded-xl mt-2"
             >
-              <Text className="text-center text-gray-700">Annuler</Text>
+              <Text className="text-center text-gray-700">{t('common.cancel')}</Text>
             </TouchableOpacity>
 
-            {uploading && (
-              <View className="mt-4 flex-row justify-center items-center">
-                <ActivityIndicator color="#044EB8" />
-                <Text className="ml-2 text-gray-600">Mise à jour...</Text>
-              </View>
-            )}
+          </View>
+        </View>
+      </Modal>
+      {/* MODAL LANGUE */}
+      <Modal visible={languageModalVisible} transparent animationType="slide" onRequestClose={() => setLanguageModalVisible(false)}>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6">
+            <Text
+              className="text-center text-gray-800 mb-6"
+              style={{ fontFamily: "MavenPro-SemiBold", fontSize: 18 }}
+            >
+              Sélectionnez votre langue
+            </Text>
+
+            {[
+              { code: 'fr', label: 'Français' },
+              { code: 'en', label: 'English' },
+              { code: 'ln', label: 'Lingala' }
+            ].map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                onPress={() => changeLanguage(lang.code)}
+                className={`flex-row items-center p-4 rounded-xl mb-3 border ${i18n.language === lang.code ? 'border-[#044EB8] bg-blue-50' : 'border-gray-100 bg-gray-100'}`}
+              >
+                <Text className={`text-[15px] ${i18n.language === lang.code ? 'text-[#044EB8] font-bold' : 'text-gray-800'}`}>
+                  {lang.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              onPress={() => setLanguageModalVisible(false)}
+              className="bg-gray-200 p-3 rounded-xl mt-2"
+            >
+              <Text className="text-center text-gray-700">{t('common.cancel')}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

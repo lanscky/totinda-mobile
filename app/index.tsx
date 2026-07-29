@@ -1,300 +1,223 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import { ChevronRight } from "lucide-react-native";
+import { MotiText, MotiView } from "moti";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
-  Image,
-  ImageBackground,
+  Dimensions,
+  ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import PagerView from "react-native-pager-view";
+import { Button } from "../components/Button";
+import { Typography } from "../components/Typography";
+
+const { width } = Dimensions.get("window");
+const ONBOARDING_SEEN_KEY = "onboarding-seen";
 
 export default function Onboarding() {
-  const pagerRef = useRef<PagerView>(null); // 👈 Typage explicite
+  const { t } = useTranslation();
+  const pagerRef = useRef<ScrollView>(null);
   const [page, setPage] = useState(0);
   const router = useRouter();
 
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_SEEN_KEY)
+      .then((hasSeenOnboarding) => {
+        if (hasSeenOnboarding === "true") {
+          router.replace("/login/login");
+        }
+      })
+      .catch(() => undefined);
+  }, [router]);
+
+  const finishOnboarding = async () => {
+    await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "true");
+    router.replace("/login/login");
+  };
+
+  const ONBOARDING_DATA = [
+    {
+      id: "1",
+      title: t("onboarding.slide1.title"),
+      description: t("onboarding.slide1.description"),
+      image: require("../assets/onboard/1.png"),
+      background: require("../assets/onboard/back1.png"),
+    },
+    {
+      id: "2",
+      title: t("onboarding.slide2.title"),
+      description: t("onboarding.slide2.description"),
+      image: require("../assets/onboard/2.png"),
+      background: require("../assets/onboard/back2.png"),
+    },
+    {
+      id: "3",
+      title: t("onboarding.slide3.title"),
+      description: t("onboarding.slide3.description"),
+      image: require("../assets/onboard/3.png"),
+      background: require("../assets/onboard/back3.png"),
+    },
+    {
+      id: "4",
+      title: t("onboarding.slide4.title"),
+      description: t("onboarding.slide4.description"),
+      image: require("../assets/onboard/4.png"),
+      background: require("../assets/onboard/back4.png"),
+    },
+  ];
+
   const handleNext = () => {
-    if (page < 3) {
-      pagerRef.current?.setPage(page + 1);
+    if (page < ONBOARDING_DATA.length - 1) {
+      pagerRef.current?.scrollTo({ x: (page + 1) * width, animated: true });
     } else {
-      console.log("Onboarding terminé !");
-     router.replace("/login/login");
+      void finishOnboarding();
     }
   };
 
+  const handleSkip = () => {
+    void finishOnboarding();
+  };
+
   return (
-    <View style={{ flex: 1 }}>
-      <PagerView
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <ScrollView
         ref={pagerRef}
+        horizontal
+        pagingEnabled
         style={{ flex: 1 }}
-        initialPage={0}
-        onPageSelected={(e) => setPage(e.nativeEvent.position)}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(event) =>
+          setPage(Math.round(event.nativeEvent.contentOffset.x / width))
+        }
       >
-        {/* Page 1 */}
-        <View key="1">
-          <ImageBackground
-            source={require("../assets/onboard/back1.png")}
-            style={styles.background}
-            resizeMode="cover"
-          >
-            <View style={styles.header}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-              />
-              {/* Bouton "Ignorer" */}
-          <TouchableOpacity onPress={() => router.replace("/login/login")}>
-            <Text
-              style={{
-                marginTop: 20,
-                fontFamily: "NotoSans-Regular",
-                color: "#1D2633", // tu peux changer la couleur pour ressembler à un bouton
-              }}
-            >
-              Ignorer
-            </Text>
-          </TouchableOpacity>
-            </View>
-
-            <View style={styles.container}>
-              <Image
-                source={require("../assets/onboard/1.png")}
-                style={styles.image}
-              />
-              <Text style={styles.textgrand}>
-                Trouvez le stage qui vous lance
-              </Text>
-              <Text style={styles.textpetit}>
-                Découvrez des offres de stage adaptées à votre profil et à vos
-                ambitions, en quelques clics.
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-
-        {/* Page 2 */}
-        <View key="2">
-          <ImageBackground
-            source={require("../assets/onboard/back2.png")}
-            style={styles.background}
-            resizeMode="cover"
-          >
-            <View style={styles.header}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-              />
-              {/* Bouton "Ignorer" */}
-            <TouchableOpacity onPress={() => router.replace("/login/login")}>
-              <Text
-                style={{
-                  marginTop: 20,
-                  fontFamily: "NotoSans-Regular",
-                  color: "#1D2633", // tu peux changer la couleur pour ressembler à un bouton
-                }}
-              >
-                Ignorer
-              </Text>
-            </TouchableOpacity>
-            </View>
-            <View style={styles.container}>
-              <Image
-                source={require("../assets/onboard/2.png")}
-                style={styles.image}
-              />
-              <Text style={styles.textgrand}>
-                Postulez sans galérer
-              </Text>
-              <Text style={styles.textpetit}>
-                Un seul profil, une multitude d’opportunités. Fini les candidatures répétitives.
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-
-        {/* Page 3 */}
-        <View key="3">
-          <ImageBackground
-            source={require("../assets/onboard/back3.png")}
-            style={styles.background}
-            resizeMode="cover"
-          >
-            <View style={styles.header}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-              />
-              {/* Bouton "Ignorer" */}
-      <TouchableOpacity onPress={() => router.replace("/login/login")}>
-        <Text
-          style={{
-            marginTop: 20,
-            fontFamily: "NotoSans-Regular",
-            color: "#1D2633", // tu peux changer la couleur pour ressembler à un bouton
-          }}
-        >
-          Ignorer
-        </Text>
-      </TouchableOpacity>
-            </View>
-            <View style={styles.container}>
-              <Image
-                source={require("../assets/onboard/3.png")}
-                style={styles.image}
-              />
-              <Text style={styles.textgrand}>
-                Suivez l’avancement de vos candidatures
-              </Text>
-              <Text style={styles.textpetit}>
-                Restez informé à chaque étape. Plus de stress, vous savez où vous en êtes.
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-
-        {/* Page 4 */}
-        <View key="4">
-          <ImageBackground
-            source={require("../assets/onboard/back4.png")}
-            style={styles.background}
-            resizeMode="cover"
-          >
-            <View style={styles.header}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-              />
-              {/* Bouton "Ignorer" */}
-      <TouchableOpacity onPress={() => router.replace("/login/login")}>
-        <Text
-          style={{
-            marginTop: 20,
-            fontFamily: "NotoSans-Regular",
-            color: "#1D2633", // tu peux changer la couleur pour ressembler à un bouton
-          }}
-        >
-          Ignorer
-        </Text>
-      </TouchableOpacity>
-            </View>
-            <View style={styles.container}>
-              <Image
-                source={require("../assets/onboard/4.png")}
-                style={styles.image}
-              />
-              <Text style={styles.textgrand}>
-                Donnez un vrai départ à votre vie pro
-              </Text>
-              <Text style={styles.textpetit}>
-                Un stage peut tout changer. Commencez maintenant à bâtir votre avenir.
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-      </PagerView>
-
-      {/* Boutons & indicateurs en bas */}
-      <View style={styles.footer}>
-        <View style={styles.dotsContainer}>
-          {[0, 1, 2, 3].map((i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                { opacity: i === page ? 1 : 0.3 },
-              ]}
+        {ONBOARDING_DATA.map((item, index) => (
+          <View key={item.id} style={{ width }}>
+            <Image
+              source={item.background}
+              style={StyleSheet.absoluteFillObject}
+              contentFit="cover"
             />
-          ))}
-        </View>
+            <SafeAreaView style={{ flex: 1 }}>
+              {/* Header */}
+              <View className="flex-row justify-between items-center px-6 pt-4">
+                <Image
+                  source={require("../assets/images/logo.png")}
+                  style={{ width: 128, height: 64 }}
+                  contentFit="contain"
+                />
+                <TouchableOpacity onPress={handleSkip}>
+                  <Typography font="noto" weight="med" className="text-secondary">
+                    {t("onboarding.skip")}
+                  </Typography>
+                </TouchableOpacity>
+              </View>
 
-        {page === 3 ? <TouchableOpacity style={styles.button} onPress={handleNext}>
-          <Text style={styles.buttonText} >Commencer</Text>
-        </TouchableOpacity> : null}
-      </View>
+              {/* Content */}
+              <View className="flex-1 justify-center items-center px-10">
+                <MotiView
+                  from={{ opacity: 0, scale: 0.8, translateY: 20 }}
+                  animate={{
+                    opacity: page === index ? 1 : 0,
+                    scale: page === index ? 1 : 0.8,
+                    translateY: page === index ? 0 : 20
+                  }}
+                  transition={{ type: 'timing', duration: 700 }}
+                >
+                  <Image
+                    source={item.image}
+                    style={{ width: width * 0.8, height: width * 0.7 }}
+                    contentFit="contain"
+                  />
+                </MotiView>
+
+                <View className="mt-8 items-center">
+                  <MotiText
+                    from={{ opacity: 0, translateY: 10 }}
+                    animate={{
+                      opacity: page === index ? 1 : 0,
+                      translateY: page === index ? 0 : 10
+                    }}
+                    transition={{ type: 'timing', duration: 500, delay: 300 }}
+                    className="text-center"
+                  >
+                    <Typography variant="h1" font="maven" weight="bold" className="text-secondary text-center">
+                      {item.title}
+                    </Typography>
+                  </MotiText>
+
+                  <MotiText
+                    from={{ opacity: 0, translateY: 10 }}
+                    animate={{
+                      opacity: page === index ? 1 : 0,
+                      translateY: page === index ? 0 : 10
+                    }}
+                    transition={{ type: 'timing', duration: 500, delay: 500 }}
+                    className="text-center mt-4"
+                  >
+                    <Typography variant="body" font="noto" weight="reg" className="text-gray-600 text-center">
+                      {item.description}
+                    </Typography>
+                  </MotiText>
+                </View>
+              </View>
+            </SafeAreaView>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Footer / Controls */}
+      <SafeAreaView
+        edges={["bottom"]}
+        style={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+        }}
+      >
+        <View style={{ paddingHorizontal: 40, paddingBottom: 24 }}>
+          <View className="flex-row justify-between items-center">
+            {/* Progress Indicators */}
+            <View className="flex-row gap-2">
+              {ONBOARDING_DATA.map((_, i) => (
+                <MotiView
+                  key={i}
+                  animate={{
+                    width: i === page ? 24 : 8,
+                    opacity: i === page ? 1 : 0.3,
+                    backgroundColor: '#044EB8',
+                  }}
+                  className="h-2 rounded-full"
+                />
+              ))}
+            </View>
+
+            {/* Action Button */}
+            <View style={{ width: 160 }}>
+              {page === ONBOARDING_DATA.length - 1 ? (
+                <Button
+                  title={t("onboarding.start")}
+                  variant="gradient"
+                  onPress={handleNext}
+                  className=""
+                />
+              ) : (
+                <TouchableOpacity
+                  onPress={handleNext}
+                  className="bg-primary h-14 w-14 rounded-full items-center justify-center self-end"
+                >
+                  <ChevronRight color="white" size={28} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    marginHorizontal: 15,
-    alignItems: "center",
-  },
-  logo: {
-    width: 130,
-    height: 100,
-    resizeMode: "contain",
-    marginTop: 20,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal:30,
-    paddingInlineStart:20,
-
-    paddingInlineEnd:20,
-    alignItems: "center",
-   
-   
-  },
-  image: {
-    width: 325,
-    height: 300,
-    resizeMode: "contain",
-  },
-  textgrand: {
-    fontSize: 28,
-    fontFamily: "MavenPro-Bold",
-    color: "#1D2633",
-   
-    marginTop: 20,
-  },
-  textpetit: {
-    fontSize: 15,
-    marginTop: 15,
-    fontFamily: "NotoSans-Regular",
-    color: "#1D2633",
-    textAlign: "justify",
-  },
-  footer: {
-    position: "absolute",
-    bottom: 40,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dotsContainer: {
-    flexDirection: "row",
-    marginBottom: 15,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 5,
-    backgroundColor: "#044EB8",
-    marginHorizontal: 5,
-  },
-  button: {
-    backgroundColor: "#044EB8",
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontFamily: "MavenPro-Medium",
-  },
-});

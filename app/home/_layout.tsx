@@ -1,58 +1,45 @@
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
 import '../global.css';
 
-export default function LoginLayout() {
+export default function HomeLayout() {
+  const { t } = useTranslation();
+
   return (
     <React.Fragment>
       <StatusBar style="auto" />
       <Tabs
         screenOptions={{
-            headerShown: true, // ✅ active l'app bar
-            headerStyle: {
-            // backgroundColor: "#044EB8", // couleur de la barre
-            },
-            headerTintColor: "#1D2633", // couleur du texte et des icônes
-            headerTitleStyle: {
-            fontFamily: "MavenPro-SemiBold", // police personnalisée
-            fontSize: 20,
-            },
-            headerTitleAlign: 'left',
-
-
-            tabBarShowLabel: true,
-            tabBarActiveTintColor: "#044EB8",
-            tabBarInactiveTintColor: "#1D2633",
-            tabBarStyle: {
+          headerShown: false,
+          tabBarShowLabel: true,
+          tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: "#044EB8",
+          tabBarInactiveTintColor: "#1D2633",
+          tabBarStyle: {
             backgroundColor: "rgba(255, 255, 255, 0.8)",
-            
+
             borderTopWidth: 0.2,
             borderTopColor: "#1D263380",
             elevation: 5,
             height: 80,
+            paddingTop: 8,
+            paddingBottom: 8,
           },
-        
-        tabBarLabelStyle: {
-            fontFamily: "NotoSans-Regular", // ✅ police personnalisée
+
+          tabBarLabelStyle: {
+            fontFamily: "NotoSans-Regular",
             fontSize: 12,
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-        },
-       }}
+          },
+        }}
       >
         {/* Page Accueil */}
         <Tabs.Screen
-          name="home"
+          name="index"
           options={{
-            title: "Accueil",
-            headerTitle: "Accueil 🔥",
-             headerRight: () => (
-                <Image
-                source={require("../../assets/icons/notification.png")}
-                style={{ width: 22, height: 22, marginRight: 15, tintColor: "#1D2633" }}
-                />
-            ),
+            title: t("tabs.home"),
             tabBarIcon: ({ focused }) => (
               <Image
                 source={
@@ -63,7 +50,7 @@ export default function LoginLayout() {
                 style={{
                   width: 25,
                   height: 25,
-                  
+
                   tintColor: focused ? "#044EB8" : "#1D2633",
                 }}
               />
@@ -74,7 +61,7 @@ export default function LoginLayout() {
         <Tabs.Screen
           name="offres"
           options={{
-            title: "Offres",
+            title: t("tabs.offers"),
             tabBarIcon: ({ focused }) => (
               <Image
                 source={require("../../assets/icons/case.png")}
@@ -92,7 +79,7 @@ export default function LoginLayout() {
         <Tabs.Screen
           name="entreprises"
           options={{
-            title: "Entreprises",
+            title: t("tabs.companies"),
             tabBarIcon: ({ focused }) => (
               <Image
                 source={require("../../assets/icons/building.png")}
@@ -110,7 +97,7 @@ export default function LoginLayout() {
         <Tabs.Screen
           name="profils"
           options={{
-            title: "Profils",
+            title: t("tabs.profile"),
             tabBarIcon: ({ focused }) => (
               <Image
                 source={require("../../assets/icons/user.png")}
@@ -123,7 +110,7 @@ export default function LoginLayout() {
             ),
           }}
         />
-        
+
       </Tabs>
     </React.Fragment>
   );

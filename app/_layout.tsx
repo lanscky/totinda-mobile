@@ -1,41 +1,83 @@
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
+import { Stack, useRouter, useSegments } from "expo-router";
+import * as SplashScreenNative from "expo-splash-screen";
 import React, { useEffect } from "react";
+import Toast from 'react-native-toast-message';
+import { SplashScreen } from '../components/SplashScreen';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+import '../i18n';
 import './global.css';
 
+void SplashScreenNative.preventAutoHideAsync();
 
-SplashScreen.preventAutoHideAsync();
+function RootLayoutNav() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
 
+  useEffect(() => {
+    if (loading) return;
+
+    const rootSegment = segments[0];
+    const isProtectedRoute = ["home", "offres", "entreprises"].includes(rootSegment);
+    const isLoginRoute = rootSegment === "login";
+
+    if (isAuthenticated && (isLoginRoute || !rootSegment)) {
+      router.replace('/home');
+    } else if (!isAuthenticated && isProtectedRoute) {
+      router.replace('/login/login');
+    }
+  }, [isAuthenticated, loading, router, segments]);
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'fade_from_bottom',
+      }}
+    />
+  );
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     "MavenPro-Regular": require("../assets/fonts/MavenPro-Regular.ttf"),
     "MavenPro-Medium": require("../assets/fonts/MavenPro-Medium.ttf"),
+    "MavenPro-SemiBold": require("../assets/fonts/MavenPro-SemiBold.ttf"),
     "MavenPro-Bold": require("../assets/fonts/MavenPro-Bold.ttf"),
+    "MavenPro-Black": require("../assets/fonts/MavenPro-Black.ttf"),
     "NotoSans-Bold": require("../assets/fonts/NotoSans-Bold.ttf"),
     "NotoSans-Regular": require("../assets/fonts/NotoSans-Regular.ttf"),
   });
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+  const [appReady, setAppReady] = React.useState(false);
+  const [animationComplete, setAnimationComplete] = React.useState(false);
 
-  if (!fontsLoaded) {
-    return null; // ou un écran de chargement
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      setAppReady(true);
+    }
+  }, [fontError, fontsLoaded]);
+
+  if (!appReady) {
+    return null;
+  }
+
+  if (!animationComplete) {
+    return (
+      <SplashScreen
+        onAnimationComplete={() => {
+          setAnimationComplete(true);
+          void SplashScreenNative.hideAsync();
+        }}
+      />
+    );
   }
 
   return (
-    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
-    // </ThemeProvider>
+    <AuthProvider>
+      <RootLayoutNav />
+      <Toast />
+    </AuthProvider>
   );
 }

@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+# Totinda Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Application mobile Expo/React Native destinée aux étudiants : découverte d’offres
+de stage, consultation des entreprises, candidature, gestion du profil et du CV.
 
-## Get started
+## Prérequis
 
-1. Install dependencies
+- Node.js LTS
+- npm
+- un compte Expo/EAS autorisé sur le projet `lanscky/archive`
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Installation
 
 ```bash
-npm run reset-project
+cp .env.example .env
+npm install
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+L’URL de l’API est configurable avec `EXPO_PUBLIC_API_URL`. Elle doit utiliser
+HTTPS en production.
 
-## Learn more
+## Contrôles qualité
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm run check
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Ce contrôle exécute TypeScript en mode strict puis ESLint.
 
-## Join the community
+## Builds
 
-Join our community of developers creating universal apps.
+```bash
+npx eas-cli build --profile preview --platform android
+npx eas-cli build --profile production --platform all
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Avant un build Store, vérifier dans `app.json` :
+
+- les identifiants Android et iOS définitifs ;
+- les icônes et le splash ;
+- les textes de permissions caméra et galerie ;
+- la version publique de l’application.
+
+Le profil `production` d’`eas.json` incrémente automatiquement le numéro de build.
+
+## Architecture
+
+- `app/` : routes et écrans Expo Router
+- `api/` : authentification et client HTTP centralisé
+- `context/` : session utilisateur
+- `components/` : composants UI partagés
+- `assets/locales/` : traductions français, anglais et lingala
+
+Les jetons sont actuellement conservés dans AsyncStorage. Pour la publication,
+installer `expo-secure-store`, migrer les jetons d’accès/rafraîchissement vers ce
+stockage chiffré et conserver uniquement le profil non sensible dans AsyncStorage.

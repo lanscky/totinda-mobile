@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -13,8 +14,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { apiRequest } from "../../api/client";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Register() {
+  const { t } = useTranslation();
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [postnom, setPostnom] = useState("");
@@ -29,14 +34,34 @@ export default function Register() {
 
   const handleRegister = async () => {
     // Vérification simple
-    if (!email || !password || !prenom || !postnom || !telephone) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires.");
+    if (
+      !nom.trim() ||
+      !email.trim() ||
+      !password ||
+      !password2 ||
+      !prenom.trim() ||
+      !postnom.trim() ||
+      !telephone.trim() ||
+      !filiere.trim() ||
+      !niveau.trim()
+    ) {
+      Alert.alert(t("common.error"), t("login.fillAllFields"));
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(email.trim())) {
+      Alert.alert(t("common.error"), t("login.invalidEmail"));
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert(t("common.error"), t("login.passwordTooShort"));
       return;
     }
 
     // Vérification correspondance des mots de passe
     if (password !== password2) {
-      Alert.alert("Erreur", "Les deux mots de passe ne correspondent pas.");
+      Alert.alert(t("common.error"), t("login.passwordMismatch"));
       return;
     }
 
@@ -44,53 +69,37 @@ export default function Register() {
 
     // Préparation des données
     const payload = {
-      filiere: filiere,
-      niveau: niveau,
+      filiere: filiere.trim(),
+      niveau: niveau.trim(),
       user: {
-        email: email,
-        is_staff: true,
-        is_superuser: true,
+        email: email.trim().toLowerCase(),
         password: password,
-        postnom: postnom,
-        prenom: prenom,
+        postnom: postnom.trim(),
+        prenom: prenom.trim(),
         role: "student",
-        telephone: telephone,
-        username: nom,
+        telephone: telephone.trim(),
+        username: nom.trim(),
       },
     };
 
     try {
-      const response = await fetch("https://backend.totinda.com/api/students/", {
+      await apiRequest("students/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        authenticated: false,
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Erreur:", data);
-        Alert.alert("Échec", "Inscription échouée : " + JSON.stringify(data));
-        return;
-      }
-
       Alert.alert(
-        "Inscription réussie ✅",
-        "Veuillez vérifier votre e-mail pour activer votre compte avant de vous connecter."
+        t("login.registerSuccess"),
+        t("login.registerSuccessMessage"),
+        [{ text: "OK", onPress: () => router.replace("/login/login") }],
       );
-
-      // Attendre un peu puis rediriger
-      setTimeout(() => {
-        router.push("/login/login");
-      }, 3000);
     } catch (error) {
-     // ✅ On vérifie d’abord le type de l’erreur
+      // ✅ On vérifie d’abord le type de l’erreur
       if (error instanceof Error) {
-        Alert.alert("Erreur", error.message);
+        Alert.alert(t("common.error"), error.message);
       } else {
-        Alert.alert("Erreur", "Une erreur inconnue est survenue.");
+        Alert.alert(t("common.error"), t("login.unknownError"));
       }
     } finally {
       setLoading(false);
@@ -123,15 +132,15 @@ export default function Register() {
               paddingHorizontal: 30,
             }}
           >
-            <Text style={styles.textgrand}> Bienvenue chez nous !</Text>
+            <Text style={styles.textgrand}> {t("login.welcomeRegister")}</Text>
             <Text style={[styles.textpetit, { paddingLeft: 7 }]}>
-              Créez un compte gratuitement !
+              {t("login.subtitleRegister")}
             </Text>
 
             {/* Champ nom */}
             <TextInput
               style={styles.input}
-              placeholder="Nom"
+              placeholder={t("login.nameLabel")}
               value={nom}
               onChangeText={setNom}
               keyboardType="default"
@@ -139,7 +148,7 @@ export default function Register() {
             {/* Champ postnom */}
             <TextInput
               style={styles.input}
-              placeholder="Postnom"
+              placeholder={t("login.postnomLabel")}
               value={postnom}
               onChangeText={setPostnom}
               keyboardType="default"
@@ -147,7 +156,7 @@ export default function Register() {
             {/* Champ prenom */}
             <TextInput
               style={styles.input}
-              placeholder="Prénom"
+              placeholder={t("login.prenomLabel")}
               value={prenom}
               onChangeText={setPrenom}
               keyboardType="default"
@@ -155,7 +164,7 @@ export default function Register() {
             {/* Champ filiere */}
             <TextInput
               style={styles.input}
-              placeholder="Filière"
+              placeholder={t("login.filiereLabel")}
               value={filiere}
               onChangeText={setFiliere}
               keyboardType="default"
@@ -163,7 +172,7 @@ export default function Register() {
             {/* Champ niveau */}
             <TextInput
               style={styles.input}
-              placeholder="Niveau"
+              placeholder={t("login.niveauLabel")}
               value={niveau}
               onChangeText={setNiveau}
               keyboardType="default"
@@ -171,15 +180,17 @@ export default function Register() {
             {/* Champ Email */}
             <TextInput
               style={styles.input}
-              placeholder="Adresse e-mail"
+              placeholder={t("login.emailLabel")}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             {/* Champ téléphone */}
             <TextInput
               style={styles.input}
-              placeholder="Téléphone"
+              placeholder={t("login.telephone")}
               value={telephone}
               onChangeText={setTelephone}
               keyboardType="phone-pad"
@@ -188,7 +199,7 @@ export default function Register() {
             {/* Champ Mot de passe */}
             <TextInput
               style={styles.input}
-              placeholder="Mot de passe"
+              placeholder={t("login.passwordLabel")}
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -197,7 +208,7 @@ export default function Register() {
             {/* Champ Confirmation mot de passe */}
             <TextInput
               style={styles.input}
-              placeholder="Confirmer mot de passe"
+              placeholder={t("login.confirmPasswordLabel")}
               secureTextEntry
               value={password2}
               onChangeText={setPassword2}
@@ -218,16 +229,16 @@ export default function Register() {
                 {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>S’enregistrer</Text>
+                  <Text style={styles.buttonText}>{t("login.registerButton")}</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
 
             {/* Lien vers connexion */}
             <Text className="text-base ml-4 text-slate-900">
-              Vous avez déjà un compte ?{" "}
+              {t("login.alreadyAccount")}{" "}
               <Text className="font-black">
-                <Link href="/login/login">Connectez-vous</Link>
+                <Link href="/login/login">{t("login.loginLink")}</Link>
               </Text>
             </Text>
           </View>
