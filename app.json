@@ -19,7 +19,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.lanscky.archive"
+      "package": "com.totinda.app"
     },
     "web": {
       "bundler": "metro",
@@ -47,7 +47,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "87081da2-0837-43f0-8630-fafb113b1bf6"
+        "projectId": "5ad34f79-241e-46ca-9264-818545f32ab1"
       }
     },
     "owner": "lanscky"

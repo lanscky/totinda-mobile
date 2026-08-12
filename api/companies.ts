@@ -9,7 +9,7 @@ export type Company = {
   telephone?: string;
   email?: string;
   site_web?: string;
-  logo?: string;
+  logo?: string | null;
 };
 
 type Paginated<T> = {

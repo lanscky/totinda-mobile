@@ -6,10 +6,12 @@ import {
   Camera,
   Edit3,
   Languages,
+  ExternalLink,
   LogOut,
   Mail,
   PhoneCall,
   Upload,
+  Trash2,
   User
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -19,9 +21,11 @@ import {
   Alert,
   Image,
   ImageBackground,
+  Linking,
   Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -39,13 +43,16 @@ type PendingPhoto = {
 
 export default function Profil() {
   const { t, i18n } = useTranslation();
-  const { user, logout, updateUser, loading } = useAuth();
+  const { user, logout, deleteAccount, updateUser, loading } = useAuth();
   const [userInfo, setUserInfo] = useState<AuthUser | null>(user);
   const [modalVisible, setModalVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingCV, setUploadingCV] = useState(false);
   const [cvName, setCvName] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<PendingPhoto | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     setUserInfo(user);
@@ -62,6 +69,34 @@ export default function Profil() {
     ]);
   };
 
+  const closeDeleteModal = () => {
+    if (deletingAccount) return;
+    setDeletePassword("");
+    setDeleteModalVisible(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) return;
+    setDeletingAccount(true);
+    try {
+      await deleteAccount(deletePassword);
+      setDeleteModalVisible(false);
+      Toast.show({
+        type: "success",
+        text1: t("profile.accountDeleted"),
+        text2: t("profile.accountDeletedDescription"),
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: t("common.error"),
+        text2: error instanceof Error ? error.message : t("common.networkError"),
+      });
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   // === GESTION DE L'IMAGE ===
   const pickImage = async (fromCamera: boolean) => {
     try {
@@ -74,15 +109,37 @@ export default function Profil() {
       }
 
       const result = fromCamera
-        ? await ImagePicker.launchCameraAsync({ allowsEditing: false, quality: 0.8 })
-        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: false, quality: 0.8 });
+        ? await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+            preferredAssetRepresentationMode:
+              ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+          });
 
       if (!result.canceled) {
         const asset = result.assets[0];
+        if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+          Toast.show({
+            type: "error",
+            text1: t("common.error"),
+            text2: t("profile.photoTooLarge"),
+          });
+          return;
+        }
+        const mimeType = asset.mimeType ?? "image/jpeg";
+        const extension = mimeType === "image/png" ? "png" : "jpg";
         setSelectedPhoto({
           uri: asset.uri,
-          name: asset.fileName ?? `profile-${Date.now()}.jpg`,
-          type: asset.mimeType ?? "image/jpeg",
+          name: asset.fileName ?? `profile-${Date.now()}.${extension}`,
+          type: mimeType,
         });
       }
     } catch {
@@ -338,6 +395,34 @@ export default function Profil() {
           )}
         </View>
 
+        {/* SUPPRESSION DU COMPTE */}
+        <View className="mt-8 border border-red-200 bg-red-50 rounded-xl p-4">
+          <Text className="text-red-800 text-[16px]" style={{ fontFamily: "MavenPro-SemiBold" }}>
+            {t("profile.deleteAccount")}
+          </Text>
+          <Text className="text-red-700 mt-2 text-[14px]" style={{ fontFamily: "NotoSans-Regular" }}>
+            {t("profile.deleteAccountDescription")}
+          </Text>
+          <TouchableOpacity
+            onPress={() => setDeleteModalVisible(true)}
+            className="mt-4 border border-red-600 py-3 rounded-xl flex-row justify-center items-center"
+          >
+            <Trash2 color="#dc2626" size={19} />
+            <Text className="text-red-600 ml-2" style={{ fontFamily: "NotoSans-SemiBold", fontSize: 15 }}>
+              {t("profile.deleteMyAccount")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => void Linking.openURL("https://totinda.com/suppression-compte")}
+            className="mt-4 flex-row justify-center items-center"
+          >
+            <ExternalLink color="#044EB8" size={16} />
+            <Text className="text-[#044EB8] ml-2 text-[13px] underline">
+              {t("profile.externalDeletion")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* DECONNEXION */}
         <TouchableOpacity
           onPress={handleLogout}
@@ -413,6 +498,56 @@ export default function Profil() {
               <Text className="text-center text-gray-700">{t('common.cancel')}</Text>
             </TouchableOpacity>
 
+          </View>
+        </View>
+      </Modal>
+      {/* MODAL SUPPRESSION DU COMPTE */}
+      <Modal visible={deleteModalVisible} transparent animationType="slide" onRequestClose={closeDeleteModal}>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6">
+            <View className="items-center">
+              <View className="bg-red-100 p-3 rounded-full">
+                <Trash2 color="#dc2626" size={28} />
+              </View>
+              <Text className="text-red-700 mt-4 text-center" style={{ fontFamily: "MavenPro-SemiBold", fontSize: 19 }}>
+                {t("profile.deleteAccountConfirmTitle")}
+              </Text>
+            </View>
+            <Text className="text-gray-600 mt-3 text-center text-[14px]">
+              {t("profile.deleteAccountConfirmDescription")}
+            </Text>
+            <TextInput
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              placeholder={t("profile.currentPassword")}
+              secureTextEntry
+              autoCapitalize="none"
+              editable={!deletingAccount}
+              className="mt-5 border border-gray-300 rounded-xl px-4 py-3 text-gray-900"
+            />
+            <TouchableOpacity
+              onPress={() => void handleDeleteAccount()}
+              disabled={!deletePassword || deletingAccount}
+              className={`mt-4 py-4 rounded-xl flex-row justify-center items-center ${!deletePassword || deletingAccount ? "bg-red-300" : "bg-red-600"}`}
+            >
+              {deletingAccount ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Trash2 color="#fff" size={19} />
+                  <Text className="text-white ml-2" style={{ fontFamily: "NotoSans-SemiBold", fontSize: 15 }}>
+                    {t("profile.confirmPermanentDeletion")}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={closeDeleteModal}
+              disabled={deletingAccount}
+              className="bg-gray-200 p-3 rounded-xl mt-3"
+            >
+              <Text className="text-center text-gray-700">{t("common.cancel")}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

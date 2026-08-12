@@ -35,7 +35,7 @@ type OffresStage = {
   is_active: boolean;
   company: number;
   nom_entreprise: string;
-  logo_entreprise: string;
+  logo_entreprise?: string | null;
 };
 
 export default function Home() {
@@ -255,7 +255,7 @@ export default function Home() {
                     id={offre.id}
                     title={offre.title}
                     companyName={offre.nom_entreprise}
-                    logo={offre.logo_entreprise}
+                    logo={offre.logo_entreprise ?? ""}
                     location={offre.localisation}
                     duration={offre.duration}
                     salary={offre.remuneration}

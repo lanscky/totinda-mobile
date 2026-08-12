@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { ClipboardCheck } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -31,7 +32,7 @@ export default function HomeLayout() {
 
           tabBarLabelStyle: {
             fontFamily: "NotoSans-Regular",
-            fontSize: 12,
+            fontSize: 10,
           },
         }}
       >
@@ -88,6 +89,20 @@ export default function HomeLayout() {
                   height: 25,
                   tintColor: focused ? "#044EB8" : "#1D2633",
                 }}
+              />
+            ),
+          }}
+        />
+
+        {/* Page Candidatures */}
+        <Tabs.Screen
+          name="candidatures"
+          options={{
+            title: t("tabs.applications"),
+            tabBarIcon: ({ focused }) => (
+              <ClipboardCheck
+                size={25}
+                color={focused ? "#044EB8" : "#1D2633"}
               />
             ),
           }}

@@ -1,12 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { secureStorage, SESSION_KEYS } from "./secureStorage";
 
 export const API_URL = (
   process.env.EXPO_PUBLIC_API_URL ?? "https://backend.totinda.com/api"
 ).replace(/\/+$/, "");
 
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
-const USER_INFO_KEY = "user_info";
+const ACCESS_TOKEN_KEY = SESSION_KEYS.accessToken;
+const REFRESH_TOKEN_KEY = SESSION_KEYS.refreshToken;
 const REQUEST_TIMEOUT_MS = 15_000;
 let onSessionExpired: (() => void) | null = null;
 let pendingTokenRefresh: Promise<string | null> | null = null;
@@ -58,7 +57,7 @@ const parseResponse = async (response: Response) => {
 };
 
 export const clearSession = () =>
-  AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_INFO_KEY]);
+  secureStorage.removeSession();
 
 export const setSessionExpiredHandler = (handler: (() => void) | null) => {
   onSessionExpired = handler;
@@ -73,7 +72,7 @@ const expireSession = async () => {
 };
 
 const performTokenRefresh = async () => {
-  const refresh = await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+  const refresh = await secureStorage.get(REFRESH_TOKEN_KEY);
   if (!refresh) {
     await expireSession();
     return null;
@@ -101,7 +100,7 @@ const performTokenRefresh = async () => {
       return null;
     }
 
-    await AsyncStorage.setItem(ACCESS_TOKEN_KEY, access);
+    await secureStorage.set(ACCESS_TOKEN_KEY, access);
     return access;
   } catch {
     return null;
@@ -135,7 +134,7 @@ export async function apiRequest<T>(
 
   try {
     const token = authenticated
-      ? await AsyncStorage.getItem(ACCESS_TOKEN_KEY)
+      ? await secureStorage.get(ACCESS_TOKEN_KEY)
       : null;
     const requestHeaders = new Headers(headers);
 

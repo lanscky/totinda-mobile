@@ -4,7 +4,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ImageBackground,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
@@ -45,6 +49,8 @@ export default function DetailOffre() {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [applicationModalVisible, setApplicationModalVisible] = useState(false);
+  const [motivation, setMotivation] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchOffer = useCallback(async () => {
@@ -92,6 +98,14 @@ export default function DetailOffre() {
 
     if (applied) return;
     if (isExpired || hasReachedFreeLimit) return;
+    if (!motivation.trim()) {
+      Toast.show({
+        type: "error",
+        text1: t("common.error_title"),
+        text2: t("offres.motivationRequired"),
+      });
+      return;
+    }
 
     try {
       setApplying(true);
@@ -99,10 +113,12 @@ export default function DetailOffre() {
         method: "POST",
         body: JSON.stringify({
           offre_stage: offer.id,
-          student: studentId,
+          motivation: motivation.trim(),
         }),
       });
       setApplied(true);
+      setApplicationModalVisible(false);
+      setMotivation("");
       setOffer((current) =>
         current
           ? {
@@ -121,6 +137,18 @@ export default function DetailOffre() {
     } finally {
       setApplying(false);
     }
+  };
+
+  const openApplicationModal = () => {
+    if (!user?.student?.id_student) {
+      Toast.show({
+        type: "error",
+        text1: t("common.error_title"),
+        text2: t("offres.studentProfileMissing"),
+      });
+      return;
+    }
+    setApplicationModalVisible(true);
   };
 
   if (loading) {
@@ -265,11 +293,73 @@ export default function DetailOffre() {
           <Button
             title={t("offres.applyNow")}
             variant="gradient"
-            onPress={handlePostuler}
+            onPress={openApplicationModal}
             loading={applying}
           />
         )}
       </View>
+
+      <Modal
+        visible={applicationModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => !applying && setApplicationModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1 justify-end bg-black/50"
+        >
+          <View className="rounded-t-3xl bg-white px-6 pb-8 pt-6">
+            <Typography variant="h2" font="maven" weight="bold" className="text-secondary">
+              {t("offres.applicationTitle")}
+            </Typography>
+            <Typography variant="caption" font="noto" className="mt-1 text-gray-500">
+              {offer.title} · {offer.nom_entreprise}
+            </Typography>
+
+            <Typography variant="body" font="noto" weight="semi" className="mb-2 mt-6 text-gray-700">
+              {t("offres.motivationLabel")}
+            </Typography>
+            <TextInput
+              value={motivation}
+              onChangeText={setMotivation}
+              placeholder={t("offres.motivationPlaceholder")}
+              placeholderTextColor="#98A2B3"
+              multiline
+              maxLength={1000}
+              editable={!applying}
+              textAlignVertical="top"
+              className="min-h-36 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 font-noto-reg text-base text-gray-800"
+            />
+            <View className="mt-2 flex-row justify-between">
+              <Typography variant="label" font="noto" className="flex-1 pr-3 text-gray-500">
+                {t("offres.motivationHelper")}
+              </Typography>
+              <Typography variant="label" font="noto" className="text-gray-400">
+                {motivation.length}/1000
+              </Typography>
+            </View>
+
+            <Button
+              title={t("offres.sendApplication")}
+              variant="gradient"
+              onPress={() => void handlePostuler()}
+              loading={applying}
+              disabled={!motivation.trim()}
+              className="mt-6"
+            />
+            <TouchableOpacity
+              onPress={() => setApplicationModalVisible(false)}
+              disabled={applying}
+              className="mt-3 rounded-xl bg-gray-100 py-3"
+            >
+              <Typography weight="semi" className="text-center text-gray-600">
+                {t("common.cancel")}
+              </Typography>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }

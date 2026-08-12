@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   ImageBackground,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +19,35 @@ import { apiRequest } from "../../api/client";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const STUDY_LEVEL_GROUPS = [
+  {
+    title: "Enseignement Secondaire",
+    options: ["Humanités (Diplôme d'État / Baccalauréat RDC)"],
+  },
+  {
+    title: "Enseignement Supérieur – Système LMD (actuel)",
+    options: [
+      "Licence LMD (Bac +3)",
+      "Master LMD (Bac +5)",
+      "Doctorat LMD (Bac +8)",
+    ],
+  },
+  {
+    title: "Enseignement Supérieur – Système classique (ancien)",
+    options: [
+      "Graduat (Ancien système - Bac +3)",
+      "Licence (Ancien système - Bac +5)",
+    ],
+  },
+  {
+    title: "Enseignement Technique et Professionnel",
+    options: [
+      "Brevet d'Aptitude Professionnelle (BAP)",
+      "Brevet de Technicien (BT)",
+    ],
+  },
+] as const;
+
 export default function Register() {
   const { t } = useTranslation();
   const [nom, setNom] = useState("");
@@ -25,6 +55,7 @@ export default function Register() {
   const [postnom, setPostnom] = useState("");
   const [filiere, setFiliere] = useState("");
   const [niveau, setNiveau] = useState("");
+  const [levelModalVisible, setLevelModalVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
   const [password, setPassword] = useState("");
@@ -169,14 +200,21 @@ export default function Register() {
               onChangeText={setFiliere}
               keyboardType="default"
             />
-            {/* Champ niveau */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.niveauLabel")}
-              value={niveau}
-              onChangeText={setNiveau}
-              keyboardType="default"
-            />
+            {/* Sélection du niveau d'études */}
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setLevelModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t("login.selectNiveau")}
+            >
+              <Text
+                style={niveau ? styles.selectValue : styles.selectPlaceholder}
+                numberOfLines={2}
+              >
+                {niveau || t("login.selectNiveau")}
+              </Text>
+              <Text style={styles.selectChevron}>⌄</Text>
+            </TouchableOpacity>
             {/* Champ Email */}
             <TextInput
               style={styles.input}
@@ -244,6 +282,67 @@ export default function Register() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={levelModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLevelModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setLevelModalVisible(false)}
+            accessibilityLabel={t("common.cancel")}
+          />
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t("login.selectNiveauTitle")}</Text>
+            <Text style={styles.modalSubtitle}>{t("login.selectNiveauDescription")}</Text>
+
+            <ScrollView
+              style={styles.levelList}
+              contentContainerStyle={styles.levelListContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {STUDY_LEVEL_GROUPS.map((group) => (
+                <View key={group.title} style={styles.levelGroup}>
+                  <Text style={styles.levelGroupTitle}>{group.title}</Text>
+                  {group.options.map((option) => {
+                    const selected = niveau === option;
+                    return (
+                      <TouchableOpacity
+                        key={option}
+                        style={[styles.levelOption, selected && styles.levelOptionSelected]}
+                        onPress={() => {
+                          setNiveau(option);
+                          setLevelModalVisible(false);
+                        }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selected }}
+                      >
+                        <Text style={[styles.levelOptionText, selected && styles.levelOptionTextSelected]}>
+                          {option}
+                        </Text>
+                        <View style={[styles.radio, selected && styles.radioSelected]}>
+                          {selected && <View style={styles.radioDot} />}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setLevelModalVisible(false)}
+            >
+              <Text style={styles.modalCancelText}>{t("common.cancel")}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -292,6 +391,139 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 15,
     fontFamily: "NotoSans-Regular",
+  },
+  selectInput: {
+    width: "100%",
+    minHeight: 50,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  selectValue: {
+    flex: 1,
+    color: "#1D2633",
+    fontFamily: "NotoSans-Regular",
+    fontSize: 14,
+    paddingRight: 10,
+  },
+  selectPlaceholder: {
+    flex: 1,
+    color: "#8E8E93",
+    fontFamily: "NotoSans-Regular",
+    fontSize: 14,
+    paddingRight: 10,
+  },
+  selectChevron: {
+    color: "#044EB8",
+    fontSize: 24,
+    lineHeight: 24,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  modalContent: {
+    width: "100%",
+    maxHeight: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingTop: 22,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
+  },
+  modalTitle: {
+    color: "#1D2633",
+    fontFamily: "MavenPro-Bold",
+    fontSize: 21,
+  },
+  modalSubtitle: {
+    color: "#667085",
+    fontFamily: "NotoSans-Regular",
+    fontSize: 13,
+    marginTop: 5,
+    marginBottom: 12,
+  },
+  levelList: {
+    flexShrink: 1,
+  },
+  levelListContent: {
+    paddingBottom: 4,
+  },
+  levelGroup: {
+    marginTop: 12,
+  },
+  levelGroupTitle: {
+    color: "#044EB8",
+    fontFamily: "MavenPro-SemiBold",
+    fontSize: 15,
+    marginBottom: 7,
+  },
+  levelOption: {
+    minHeight: 50,
+    borderWidth: 1,
+    borderColor: "#E4E7EC",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  levelOptionSelected: {
+    borderColor: "#044EB8",
+    backgroundColor: "#EFF6FF",
+  },
+  levelOptionText: {
+    flex: 1,
+    color: "#344054",
+    fontFamily: "NotoSans-Regular",
+    fontSize: 13,
+    paddingRight: 10,
+  },
+  levelOptionTextSelected: {
+    color: "#044EB8",
+    fontFamily: "NotoSans-Bold",
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#98A2B3",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioSelected: {
+    borderColor: "#044EB8",
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#044EB8",
+  },
+  modalCancelButton: {
+    marginTop: 12,
+    borderRadius: 10,
+    backgroundColor: "#EAECF0",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  modalCancelText: {
+    color: "#344054",
+    fontFamily: "NotoSans-SemiBold",
+    fontSize: 14,
   },
   button: {
     width: "100%",

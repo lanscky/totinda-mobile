@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiRequest, clearSession } from "./client";
+import { secureStorage, SESSION_KEYS } from "./secureStorage";
 
 export interface User {
   id: number;
@@ -10,7 +10,7 @@ export interface User {
   prenom?: string;
   postnom?: string;
   telephone?: string;
-  profile_picture?: string;
+  profile_picture?: string | null;
   student?: {
     id_student: number;
     niveau?: string;
@@ -48,10 +48,10 @@ export const authService = {
         throw new Error("Compte inactif. Veuillez contacter l'administrateur.");
       }
 
-      await AsyncStorage.multiSet([
-        ["access_token", data.access],
-        ["refresh_token", data.refresh],
-        ["user_info", JSON.stringify(data.user)],
+      await Promise.all([
+        secureStorage.set(SESSION_KEYS.accessToken, data.access),
+        secureStorage.set(SESSION_KEYS.refreshToken, data.refresh),
+        secureStorage.set(SESSION_KEYS.userInfo, JSON.stringify(data.user)),
       ]);
 
       return data;
@@ -59,12 +59,21 @@ export const authService = {
 
   logout: clearSession,
 
+  deleteAccount: async (password: string): Promise<void> => {
+    await apiRequest<void>("users/delete-account/", {
+      method: "DELETE",
+      body: JSON.stringify({ password }),
+    });
+    await clearSession();
+  },
+
   getAccessToken: async () => {
-    return await AsyncStorage.getItem("access_token");
+    await secureStorage.clearLegacySession();
+    return await secureStorage.get(SESSION_KEYS.accessToken);
   },
 
   getUserInfo: async (): Promise<User | null> => {
-    const info = await AsyncStorage.getItem("user_info");
+    const info = await secureStorage.get(SESSION_KEYS.userInfo);
     if (!info) return null;
 
     try {

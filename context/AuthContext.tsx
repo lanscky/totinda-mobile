@@ -1,13 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { authService, User } from '../api/auth';
 import { setSessionExpiredHandler } from '../api/client';
+import { secureStorage, SESSION_KEYS } from '../api/secureStorage';
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    deleteAccount: (password: string) => Promise<void>;
     updateUser: (user: User) => Promise<void>;
     isAuthenticated: boolean;
 }
@@ -55,8 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     };
 
+    const deleteAccount = async (password: string) => {
+        await authService.deleteAccount(password);
+        setUser(null);
+    };
+
     const updateUser = async (nextUser: User) => {
-        await AsyncStorage.setItem("user_info", JSON.stringify(nextUser));
+        await secureStorage.set(SESSION_KEYS.userInfo, JSON.stringify(nextUser));
         setUser(nextUser);
     };
 
@@ -67,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 loading,
                 login,
                 logout,
+                deleteAccount,
                 updateUser,
                 isAuthenticated: !!user,
             }}

@@ -19,7 +19,8 @@
         "home": "Accueil",
         "offers": "Offres",
         "companies": "Entreprises",
-        "profile": "Profil"
+        "profile": "Profil",
+        "applications": "Candidatures"
     },
     "filters": {
         "title": "Filtres",
@@ -49,7 +50,89 @@
         "deadlineDate": "Clôturée le {{date}}",
         "incompleteProfile": "Complétez votre profil étudiant avant de postuler.",
         "offerUnavailable": "Cette offre n’est plus disponible.",
-        "studentProfileMissing": "Le profil étudiant n’est plus présent dans la session. Déconnectez-vous puis reconnectez-vous."
+        "studentProfileMissing": "Le profil étudiant n’est plus présent dans la session. Déconnectez-vous puis reconnectez-vous.",
+        "applicationTitle": "Envoyer ma candidature",
+        "motivationLabel": "Message de motivation",
+        "motivationPlaceholder": "Expliquez brièvement votre intérêt pour cette offre et ce que vous pouvez apporter…",
+        "motivationHelper": "Ce message sera transmis à l’entreprise avec votre profil.",
+        "motivationRequired": "Veuillez écrire un message de motivation.",
+        "sendApplication": "Envoyer la candidature"
+    },
+    "applications": {
+        "title": "Mes candidatures",
+        "subtitle": "Suivez les réponses des entreprises à vos candidatures.",
+        "pending": "En attente",
+        "accepted": "Acceptée",
+        "rejected": "Rejetée",
+        "pendingDescription": "L’entreprise examine actuellement votre candidature.",
+        "acceptedDescription": "Félicitations ! L’entreprise a accepté votre candidature.",
+        "rejectedDescription": "L’entreprise n’a pas retenu cette candidature.",
+        "appliedOn": "Envoyée le {{date}}",
+        "empty": "Vous n’avez encore envoyé aucune candidature.",
+        "emptyFilter": "Aucune candidature ne correspond à ce statut.",
+        "newAcceptanceTitle": "Félicitations !",
+        "newAcceptanceMessage": "Votre candidature pour « {{offer}} » chez {{company}} a été acceptée.",
+        "newAcceptanceMultiple": "{{count}} de vos candidatures ont été acceptées. Consultez-les dans cette liste.",
+        "understood": "Compris",
+        "viewOffer": "Voir l’offre",
+        "companyMessage": "Message de l’entreprise",
+        "viewStage": "Voir mon parcours de stage",
+        "filters": {
+            "all": "Toutes",
+            "pending": "En attente",
+            "accepted": "Acceptées",
+            "rejected": "Rejetées"
+        }
+    },
+    "stage": {
+        "title": "Mon stage",
+        "subtitle": "Informations et progression de votre parcours",
+        "invalid": "Identifiant de stage invalide.",
+        "notFound": "Ce parcours de stage est introuvable.",
+        "period": "Période du stage",
+        "toDefine": "À définir",
+        "objectives": "Objectifs du stage",
+        "noObjectives": "L’entreprise n’a pas encore défini les objectifs.",
+        "supervisor": "Superviseur",
+        "noSupervisor": "Le superviseur n’a pas encore été renseigné.",
+        "viewConvention": "Consulter la convention",
+        "noConvention": "Convention non disponible",
+        "evaluation": {
+            "title": "Évaluation finale",
+            "pending": "Le stage est terminé. L’évaluation de l’entreprise n’a pas encore été publiée.",
+            "afterCompletion": "L’évaluation sera disponible ici lorsque le stage sera terminé et évalué par l’entreprise."
+        },
+        "status": {
+            "upcoming": "À venir",
+            "in_progress": "En cours",
+            "completed": "Terminé",
+            "cancelled": "Interrompu"
+        },
+        "journal": {
+            "title": "Journal hebdomadaire",
+            "subtitle": "Notez vos activités et votre progression chaque semaine.",
+            "empty": "Aucun rapport hebdomadaire pour le moment.",
+            "addWeek": "Ajouter cette semaine",
+            "editorTitle": "Rapport hebdomadaire",
+            "currentWeek": "Semaine en cours",
+            "activities": "Activités réalisées *",
+            "activitiesPlaceholder": "Décrivez les missions et tâches accomplies...",
+            "learnings": "Ce que j’ai appris",
+            "learningsPlaceholder": "Compétences, outils ou méthodes découverts...",
+            "difficulties": "Difficultés rencontrées",
+            "difficultiesPlaceholder": "Blocages ou besoins d’accompagnement...",
+            "saveDraft": "Enregistrer le brouillon",
+            "submit": "Soumettre à l’entreprise",
+            "activitiesRequired": "Décrivez au moins les activités réalisées.",
+            "savedSuccess": "Brouillon enregistré",
+            "submittedSuccess": "Rapport soumis à l’entreprise",
+            "companyComment": "Commentaire de l’entreprise",
+            "status": {
+                "draft": "Brouillon",
+                "submitted": "En attente de validation",
+                "validated": "Validé par l’entreprise"
+            }
+        }
     },
     "entreprises": {
         "profile": "Profil Entreprise",
@@ -84,6 +167,9 @@
         "prenomLabel": "Prénom",
         "filiereLabel": "Filière",
         "niveauLabel": "Niveau",
+        "selectNiveau": "Sélectionnez votre niveau d’études",
+        "selectNiveauTitle": "Niveau d’études",
+        "selectNiveauDescription": "Choisissez le diplôme ou le niveau qui correspond à votre parcours.",
         "telephone": "Téléphone",
         "confirmPasswordLabel": "Confirmer mot de passe",
         "registerButton": "S’enregistrer",
@@ -161,9 +247,20 @@
         "language": "Langue",
         "permissionDenied": "Cette permission est nécessaire pour choisir une photo.",
         "imageError": "Impossible de sélectionner cette image.",
+        "photoTooLarge": "La photo de profil ne doit pas dépasser 5 Mo.",
         "photoUpdated": "Photo de profil mise à jour.",
         "photoPreview": "Aperçu de la nouvelle photo",
         "savePhoto": "Enregistrer la photo",
-        "cvUpdated": "CV mis à jour avec succès."
+        "cvUpdated": "CV mis à jour avec succès.",
+        "deleteAccount": "Zone sensible",
+        "deleteAccountDescription": "La suppression efface définitivement votre compte, votre profil, vos candidatures et vos fichiers.",
+        "deleteMyAccount": "Supprimer mon compte",
+        "externalDeletion": "Demander la suppression depuis le site web",
+        "deleteAccountConfirmTitle": "Supprimer définitivement le compte ?",
+        "deleteAccountConfirmDescription": "Cette action est irréversible. Saisissez votre mot de passe actuel pour confirmer.",
+        "currentPassword": "Mot de passe actuel",
+        "confirmPermanentDeletion": "Supprimer définitivement",
+        "accountDeleted": "Compte supprimé",
+        "accountDeletedDescription": "Vos données Totinda ont été supprimées."
     }
 }

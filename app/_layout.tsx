@@ -19,7 +19,7 @@ function RootLayoutNav() {
     if (loading) return;
 
     const rootSegment = segments[0];
-    const isProtectedRoute = ["home", "offres", "entreprises"].includes(rootSegment);
+    const isProtectedRoute = ["home", "offres", "entreprises", "stages"].includes(rootSegment);
     const isLoginRoute = rootSegment === "login";
 
     if (isAuthenticated && (isLoginRoute || !rootSegment)) {

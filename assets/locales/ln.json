@@ -19,7 +19,8 @@
         "home": "Ebandeli",
         "offers": "Misala",
         "companies": "Bakompani",
-        "profile": "Profil"
+        "profile": "Profil",
+        "applications": "Ba candidatures"
     },
     "filters": {
         "title": "Maponi",
@@ -49,7 +50,89 @@
         "deadlineDate": "Ekokaki na {{date}}",
         "incompleteProfile": "Silisa profil na yo ya moyekoli yambo ya kopesa candidature.",
         "offerUnavailable": "Mosala oyo ezali lisusu te.",
-        "studentProfileMissing": "Profil ya moyekoli ezali lisusu na session te. Bima mpe kota lisusu."
+        "studentProfileMissing": "Profil ya moyekoli ezali lisusu na session te. Bima mpe kota lisusu.",
+        "applicationTitle": "Tinda candidature na ngai",
+        "motivationLabel": "Message ya motivation",
+        "motivationPlaceholder": "Limbola na mokuse mpo na nini olingi offre oyo mpe makoki oyo okoki komema…",
+        "motivationHelper": "Message oyo ekotindama na kompani elongo na profil na yo.",
+        "motivationRequired": "Koma message ya motivation.",
+        "sendApplication": "Tinda candidature"
+    },
+    "applications": {
+        "title": "Ba candidatures na ngai",
+        "subtitle": "Landa biyano ya bakompani na ba candidatures na yo.",
+        "pending": "Ezali kozela",
+        "accepted": "Endimami",
+        "rejected": "Eboyami",
+        "pendingDescription": "Kompani ezali kotala candidature na yo.",
+        "acceptedDescription": "Longonya! Kompani endimi candidature na yo.",
+        "rejectedDescription": "Kompani eponi candidature oyo te.",
+        "appliedOn": "Etindami le {{date}}",
+        "empty": "Otindi naino candidature moko te.",
+        "emptyFilter": "Candidature moko te ezali na statut oyo.",
+        "newAcceptanceTitle": "Longonya!",
+        "newAcceptanceMessage": "Candidature na yo mpo na « {{offer}} » na {{company}} endimami.",
+        "newAcceptanceMultiple": "Ba candidatures {{count}} na yo endimami. Tala yango na liste oyo.",
+        "understood": "Nasosoli",
+        "viewOffer": "Tala offre",
+        "companyMessage": "Message ya kompani",
+        "viewStage": "Tala mobembo ya stage na ngai",
+        "filters": {
+            "all": "Nyonso",
+            "pending": "Ezali kozela",
+            "accepted": "Endimami",
+            "rejected": "Eboyami"
+        }
+    },
+    "stage": {
+        "title": "Stage na ngai",
+        "subtitle": "Makambo mpe bokoli ya mobembo ya stage",
+        "invalid": "Nimero ya stage ezali malamu te.",
+        "notFound": "Mobembo oyo ya stage emonani te.",
+        "period": "Eleko ya stage",
+        "toDefine": "Ekoyebana",
+        "objectives": "Mikano ya stage",
+        "noObjectives": "Kompani etie naino mikano te.",
+        "supervisor": "Mokengeli",
+        "noSupervisor": "Mokengeli ayebani naino te.",
+        "viewConvention": "Tala convention ya stage",
+        "noConvention": "Convention ezali te",
+        "evaluation": {
+            "title": "Evaluation ya suka",
+            "pending": "Stage esili. Kompani ebimisi naino evaluation te.",
+            "afterCompletion": "Evaluation ekomonana awa soki stage esili mpe kompani epesi yango."
+        },
+        "status": {
+            "upcoming": "Ekoya",
+            "in_progress": "Ezali kosalema",
+            "completed": "Esili",
+            "cancelled": "Ekatani"
+        },
+        "journal": {
+            "title": "Journal ya poso",
+            "subtitle": "Koma misala mpe bokoli na yo poso nyonso.",
+            "empty": "Rapport ya poso ezali naino te.",
+            "addWeek": "Bakisa poso oyo",
+            "editorTitle": "Rapport ya poso",
+            "currentWeek": "Poso oyo",
+            "activities": "Misala osalaki *",
+            "activitiesPlaceholder": "Limbola misala oyo osalaki...",
+            "learnings": "Makambo nayekoli",
+            "learningsPlaceholder": "Mayele, bisaleli to ndenge ya mosala oyekoli...",
+            "difficulties": "Mikakatano",
+            "difficultiesPlaceholder": "Limbola mikakatano to lisungi oyo osengeli na yango...",
+            "saveDraft": "Bomba brouillon",
+            "submit": "Tinda na kompani",
+            "activitiesRequired": "Limbola ata misala oyo osalaki.",
+            "savedSuccess": "Brouillon ebombami",
+            "submittedSuccess": "Rapport etindami na kompani",
+            "companyComment": "Likanisi ya kompani",
+            "status": {
+                "draft": "Brouillon",
+                "submitted": "Ezali kozela bondimi",
+                "validated": "Kompani endimi"
+            }
+        }
     },
     "entreprises": {
         "profile": "Profil ya Kompani",
@@ -84,6 +167,9 @@
         "prenomLabel": "Kombo",
         "filiereLabel": "Kelasi oyo ozali kosala",
         "niveauLabel": "Ndenge ya kelasi",
+        "selectNiveau": "Pona niveau ya kelasi na yo",
+        "selectNiveauTitle": "Niveau ya kelasi",
+        "selectNiveauDescription": "Pona diplôme to niveau oyo ekokani na kelasi na yo.",
         "telephone": "Nimero ya telefone",
         "confirmPasswordLabel": "Zongela liloba ya sekele",
         "registerButton": "Komisa nkombo",
@@ -161,9 +247,20 @@
         "language": "Monoko",
         "permissionDenied": "Permission oyo esengeli mpo na kopona foti.",
         "imageError": "Likoki ya kopona foti oyo ezali te.",
+        "photoTooLarge": "Foti ya profil esengeli koleka 5 Mo te.",
         "photoUpdated": "Foti ya profil ebongwani.",
         "photoPreview": "Foti ya sika",
         "savePhoto": "Bomba foti",
-        "cvUpdated": "CV ebongwani malamu."
+        "cvUpdated": "CV ebongwani malamu.",
+        "deleteAccount": "Esika ya bokebi",
+        "deleteAccountDescription": "Kolongola compte ekolongola mpo na libela profil, ba candidature mpe ba fichier na yo.",
+        "deleteMyAccount": "Longola compte na ngai",
+        "externalDeletion": "Senga bolongoli na site web",
+        "deleteAccountConfirmTitle": "Olongola compte mpo na libela?",
+        "deleteAccountConfirmDescription": "Okoki kozongisa yango te. Koma mot de passe na yo mpo na kondima.",
+        "currentPassword": "Mot de passe ya sikawa",
+        "confirmPermanentDeletion": "Longola mpo na libela",
+        "accountDeleted": "Compte elongolami",
+        "accountDeletedDescription": "Ba données na yo ya Totinda elongolami."
     }
 }

@@ -19,7 +19,8 @@
         "home": "Home",
         "offers": "Offers",
         "companies": "Companies",
-        "profile": "Profile"
+        "profile": "Profile",
+        "applications": "Applications"
     },
     "filters": {
         "title": "Filters",
@@ -49,7 +50,89 @@
         "deadlineDate": "Closed on {{date}}",
         "incompleteProfile": "Complete your student profile before applying.",
         "offerUnavailable": "This offer is no longer available.",
-        "studentProfileMissing": "The student profile is missing from this session. Log out and log in again."
+        "studentProfileMissing": "The student profile is missing from this session. Log out and log in again.",
+        "applicationTitle": "Submit my application",
+        "motivationLabel": "Motivation message",
+        "motivationPlaceholder": "Briefly explain your interest in this offer and what you can contribute…",
+        "motivationHelper": "This message will be sent to the company with your profile.",
+        "motivationRequired": "Please enter a motivation message.",
+        "sendApplication": "Submit application"
+    },
+    "applications": {
+        "title": "My applications",
+        "subtitle": "Track company responses to your applications.",
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "pendingDescription": "The company is currently reviewing your application.",
+        "acceptedDescription": "Congratulations! The company accepted your application.",
+        "rejectedDescription": "The company did not select this application.",
+        "appliedOn": "Sent on {{date}}",
+        "empty": "You have not submitted any applications yet.",
+        "emptyFilter": "No application matches this status.",
+        "newAcceptanceTitle": "Congratulations!",
+        "newAcceptanceMessage": "Your application for “{{offer}}” at {{company}} was accepted.",
+        "newAcceptanceMultiple": "{{count}} of your applications were accepted. View them in this list.",
+        "understood": "Got it",
+        "viewOffer": "View offer",
+        "companyMessage": "Message from the company",
+        "viewStage": "View my internship journey",
+        "filters": {
+            "all": "All",
+            "pending": "Pending",
+            "accepted": "Accepted",
+            "rejected": "Rejected"
+        }
+    },
+    "stage": {
+        "title": "My internship",
+        "subtitle": "Information and progress for your internship journey",
+        "invalid": "Invalid internship identifier.",
+        "notFound": "This internship journey could not be found.",
+        "period": "Internship period",
+        "toDefine": "To be defined",
+        "objectives": "Internship objectives",
+        "noObjectives": "The company has not defined the objectives yet.",
+        "supervisor": "Supervisor",
+        "noSupervisor": "The supervisor has not been assigned yet.",
+        "viewConvention": "View internship agreement",
+        "noConvention": "Agreement unavailable",
+        "evaluation": {
+            "title": "Final evaluation",
+            "pending": "The internship is complete. The company has not published its evaluation yet.",
+            "afterCompletion": "The evaluation will appear here once the internship is completed and evaluated by the company."
+        },
+        "status": {
+            "upcoming": "Upcoming",
+            "in_progress": "In progress",
+            "completed": "Completed",
+            "cancelled": "Interrupted"
+        },
+        "journal": {
+            "title": "Weekly journal",
+            "subtitle": "Record your activities and progress each week.",
+            "empty": "No weekly report yet.",
+            "addWeek": "Add this week",
+            "editorTitle": "Weekly report",
+            "currentWeek": "Current week",
+            "activities": "Completed activities *",
+            "activitiesPlaceholder": "Describe the assignments and tasks you completed...",
+            "learnings": "What I learned",
+            "learningsPlaceholder": "Skills, tools or methods you discovered...",
+            "difficulties": "Difficulties encountered",
+            "difficultiesPlaceholder": "Obstacles or support you need...",
+            "saveDraft": "Save draft",
+            "submit": "Submit to company",
+            "activitiesRequired": "Please describe at least the activities completed.",
+            "savedSuccess": "Draft saved",
+            "submittedSuccess": "Report submitted to the company",
+            "companyComment": "Company comment",
+            "status": {
+                "draft": "Draft",
+                "submitted": "Awaiting validation",
+                "validated": "Validated by the company"
+            }
+        }
     },
     "entreprises": {
         "profile": "Company Profile",
@@ -84,6 +167,9 @@
         "prenomLabel": "First Name",
         "filiereLabel": "Field of study",
         "niveauLabel": "Academic Level",
+        "selectNiveau": "Select your education level",
+        "selectNiveauTitle": "Education level",
+        "selectNiveauDescription": "Choose the diploma or level that matches your education.",
         "telephone": "Phone number",
         "confirmPasswordLabel": "Confirm password",
         "registerButton": "Register",
@@ -161,9 +247,20 @@
         "language": "Language",
         "permissionDenied": "This permission is required to choose a photo.",
         "imageError": "Unable to select this image.",
+        "photoTooLarge": "The profile picture must not exceed 5 MB.",
         "photoUpdated": "Profile picture updated.",
         "photoPreview": "New photo preview",
         "savePhoto": "Save photo",
-        "cvUpdated": "CV updated successfully."
+        "cvUpdated": "CV updated successfully.",
+        "deleteAccount": "Sensitive area",
+        "deleteAccountDescription": "Deletion permanently removes your account, profile, applications and files.",
+        "deleteMyAccount": "Delete my account",
+        "externalDeletion": "Request deletion from the website",
+        "deleteAccountConfirmTitle": "Permanently delete your account?",
+        "deleteAccountConfirmDescription": "This action cannot be undone. Enter your current password to confirm.",
+        "currentPassword": "Current password",
+        "confirmPermanentDeletion": "Delete permanently",
+        "accountDeleted": "Account deleted",
+        "accountDeletedDescription": "Your Totinda data has been deleted."
     }
 }
