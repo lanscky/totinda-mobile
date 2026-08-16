@@ -92,6 +92,7 @@ interface CompanyCardProps {
     industry: string;
     onPress: () => void;
     index?: number;
+    grid?: boolean;
 }
 
 export const CompanyCard: React.FC<CompanyCardProps> = ({
@@ -100,9 +101,11 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
     industry,
     onPress,
     index = 0,
+    grid = false,
 }) => {
     return (
         <MotiView
+            className={grid ? "w-full" : undefined}
             from={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'timing', duration: 400, delay: index * 100 }}
@@ -112,7 +115,7 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
                 activeOpacity={0.8}
                 accessibilityRole="button"
                 accessibilityLabel={`${name}, ${industry}`}
-                className="w-40 mr-4 bg-white rounded-3xl p-5 items-center shadow-sm border border-gray-50"
+                className={`${grid ? "w-full" : "w-40 mr-4"} bg-white rounded-3xl p-5 items-center shadow-sm border border-gray-50`}
             >
                 <View className="w-20 h-20 bg-white rounded-full items-center justify-center border border-gray-100 shadow-sm mb-3 overflow-hidden">
                     <Image

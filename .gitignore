@@ -19,6 +19,7 @@ expo-env.d.ts
 *.mobileprovision
 *.aab
 *.apk
+*firebase-adminsdk*.json
 
 # Metro
 .metro-health-check*

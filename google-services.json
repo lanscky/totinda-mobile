@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "79048900294",
+    "project_id": "totinda-cf655",
+    "storage_bucket": "totinda-cf655.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79048900294:android:7324347eda0a4bd765e1c7",
+        "android_client_info": {
+          "package_name": "com.totinda.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIUtCXMSHPbTFe_5q471ePcUdG4swxPTs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

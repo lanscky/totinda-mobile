@@ -100,7 +100,16 @@
         "evaluation": {
             "title": "Final evaluation",
             "pending": "The internship is complete. The company has not published its evaluation yet.",
-            "afterCompletion": "The evaluation will appear here once the internship is completed and evaluated by the company."
+            "afterCompletion": "The evaluation will appear here once the internship is completed and evaluated by the company.",
+            "downloadCertificate": "Download my certificate",
+            "certificateError": "Certificate unavailable"
+        },
+        "progress": {
+            "title": "Internship progress",
+            "validated": "Validated",
+            "pending": "Pending",
+            "missing": "Missing",
+            "informative": "These indicators are informational and do not block any feature."
         },
         "status": {
             "upcoming": "Upcoming",
@@ -153,6 +162,12 @@
         "forgotPassword": "Forgot password?",
         "loginButton": "Log in",
         "orContinue": "Or continue with",
+        "continueWithGoogle": "Continue with Google",
+        "googleLoginFailed": "Google sign-in failed",
+        "linkExistingAccount": "Link your existing account",
+        "linkExistingAccountDescription": "A Totinda account already uses this email address. Enter its password to link it securely to Google.",
+        "linkAccount": "Link and continue",
+        "accountLinkFailed": "Account linking failed",
         "noAccount": "Don't have an account?",
         "register": "Sign up",
         "missingFields": "Missing fields",
@@ -181,6 +196,21 @@
         "invalidEmail": "Please enter a valid email address.",
         "passwordTooShort": "The password must contain at least 8 characters.",
         "unknownError": "An unknown error has occurred."
+    },
+    "profileCompletion": {
+        "title": "Profile {{percentage}}% complete",
+        "open": "Complete my profile",
+        "ready": "Profile ready to apply",
+        "readyDescription": "You can now submit applications.",
+        "missingCount_one": "{{count}} required detail still missing.",
+        "missingCount_other": "{{count}} required details still missing.",
+        "screenTitle": "Complete my profile",
+        "screenSubtitle": "This information is only required when you apply.",
+        "identitySection": "Identity",
+        "studySection": "Academic background",
+        "save": "Save and continue",
+        "saved": "Your profile is ready for applications.",
+        "required": "This field is required"
     },
     "home": {
         "greeting": "Hello,",

@@ -18,6 +18,9 @@ import { FilterModal, FilterValues } from "../../components/FilterModal";
 import { CompanySkeleton, OfferSkeleton } from "../../components/Skeleton";
 import { StateView } from "../../components/StateView";
 import { Typography } from "../../components/Typography";
+import { NotificationButton } from "../../components/NotificationButton";
+import { ProfileCompletionCard } from "../../components/ProfileCompletionCard";
+import { useAuth } from "../../context/AuthContext";
 type OffresStage = {
   id: number;
   nombre_candidats: number;
@@ -41,6 +44,7 @@ type OffresStage = {
 export default function Home() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [offrestages, setOffrestages] = useState<OffresStage[]>([]);
   const [entreprises, setEntreprises] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,8 +146,8 @@ export default function Home() {
 
       <SafeAreaView className="flex-1">
         {/* Header */}
-        <View className="px-6 py-4">
-          <View>
+        <View className="flex-row items-center px-6 py-4">
+          <View className="flex-1 pr-3">
             <Typography variant="body" className="text-gray-500">
               {t('home.greeting')}
             </Typography>
@@ -151,6 +155,7 @@ export default function Home() {
               {t('home.title')}
             </Typography>
           </View>
+          <NotificationButton />
         </View>
 
         <ScrollView
@@ -159,6 +164,15 @@ export default function Home() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#044EB8"]} />
           }
         >
+          {!user?.profile_completion?.can_apply && (
+            <View className="mx-6 mt-3">
+              <ProfileCompletionCard
+                completion={user?.profile_completion}
+                onPress={() => router.push("/profile/complete")}
+              />
+            </View>
+          )}
+
           {/* Search Bar */}
           <View className="px-6 mt-4">
             <View className="flex-row gap-3">

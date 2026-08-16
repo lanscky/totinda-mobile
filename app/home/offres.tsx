@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import {
   ImageBackground,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiRequest } from "../../api/client";
 import { JobOfferCard } from "../../components/Card";
@@ -75,23 +75,23 @@ export default function Offres() {
     <View className="flex-1 bg-white">
       <ImageBackground
         source={require("../../assets/onboard/background_page.png")}
-        className="absolute w-full h-full"
+        className="absolute h-full w-full"
         resizeMode="cover"
       />
 
       <SafeAreaView className="flex-1">
         {/* Header */}
-        <View className="px-6 py-4 flex-row items-center justify-between">
+        <View className="flex-row items-center justify-between px-6 pb-3 pt-4">
           <View className="flex-row items-center">
-            <Typography variant="h3" font="maven" weight="bold" className="ml-4 text-secondary">
+            <Typography variant="h2" font="maven" weight="bold" className="text-secondary">
               {t("home.recentOffers")}
             </Typography>
           </View>
         </View>
 
         {/* Search */}
-        <View className="px-6 mt-2 mb-6">
-          <View className="h-12 bg-white rounded-xl flex-row items-center px-4 border border-gray-100 shadow-sm">
+        <View className="mb-4 mt-2 px-6">
+          <View className="h-12 flex-row items-center rounded-xl border border-gray-100 bg-white px-4 shadow-sm">
             <Search size={18} color="#9CA3AF" />
             <TextInput
               placeholder={t("home.searchPlaceholderList")}
@@ -104,7 +104,9 @@ export default function Offres() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl

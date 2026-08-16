@@ -12,11 +12,11 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 import { useTranslation } from "react-i18next";
-import { apiRequest } from "../../api/client";
+import { ApiError, apiRequest } from "../../api/client";
 import { Button } from "../../components/Button";
 import { StateView } from "../../components/StateView";
 import { Typography } from "../../components/Typography";
@@ -43,6 +43,7 @@ type OfferDetails = {
 export default function DetailOffre() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const [offer, setOffer] = useState<OfferDetails | null>(null);
@@ -129,6 +130,17 @@ export default function DetailOffre() {
       );
       Toast.show({ type: "success", text1: t('common.success_title'), text2: t('offres.applySuccess') });
     } catch (error) {
+      const payload = error instanceof ApiError && error.data && typeof error.data === "object"
+        ? error.data as Record<string, unknown>
+        : null;
+      if (payload?.code === "incomplete_profile") {
+        setApplicationModalVisible(false);
+        router.push({
+          pathname: "/profile/complete",
+          params: { returnTo: `/offres/${id}` },
+        });
+        return;
+      }
       Toast.show({
         type: "error",
         text1: t('common.error_title'),
@@ -140,11 +152,15 @@ export default function DetailOffre() {
   };
 
   const openApplicationModal = () => {
-    if (!user?.student?.id_student) {
+    if (!user?.profile_completion?.can_apply) {
       Toast.show({
-        type: "error",
-        text1: t("common.error_title"),
-        text2: t("offres.studentProfileMissing"),
+        type: "info",
+        text1: t("profileCompletion.screenTitle"),
+        text2: t("offres.incompleteProfile"),
+      });
+      router.push({
+        pathname: "/profile/complete",
+        params: { returnTo: `/offres/${id}` },
       });
       return;
     }
@@ -179,16 +195,16 @@ export default function DetailOffre() {
     <View className="flex-1 bg-white">
       <ImageBackground
         source={require("../../assets/onboard/background_page.png")}
-        className="absolute w-full h-full"
+        className="absolute h-full w-full"
         resizeMode="cover"
       />
 
       <SafeAreaView className="flex-1">
         {/* Header */}
-        <View className="px-6 py-6 flex-row items-center">
+        <View className="flex-row items-center px-5 pb-3 pt-4">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="w-10 h-10 bg-white rounded-xl items-center justify-center shadow-sm border border-gray-100"
+            className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm"
           >
             <ChevronLeft size={24} color="#1D2633" />
           </TouchableOpacity>
@@ -197,8 +213,17 @@ export default function DetailOffre() {
           </Typography>
         </View>
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-8 pt-4 pb-24">
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 116 + insets.bottom,
+          }}
+        >
+          <View>
             {/* Main Info */}
             <Typography variant="h1" font="maven" weight="bold" className="text-secondary">
               {offer.title}
@@ -207,7 +232,7 @@ export default function DetailOffre() {
               {offer.nom_entreprise}
             </Typography>
 
-            <View className="flex-row items-center mt-3 gap-x-4">
+            <View className="mt-3 flex-row flex-wrap items-center gap-x-4 gap-y-2">
               <View className="flex-row items-center">
                 <Users size={14} color="#10B981" />
                 <Typography variant="caption" className="text-green-600 ml-1">
@@ -224,12 +249,12 @@ export default function DetailOffre() {
             </View>
 
             {/* Info Grid */}
-            <View className="flex-row flex-wrap gap-4 mt-8">
+            <View className="mt-8 flex-row flex-wrap justify-between gap-y-4">
               {infoItems.map((item, i) => (
-                <View key={i} className="w-[47%] bg-white/50 border border-gray-100 p-4 rounded-2xl">
+                <View key={i} className="w-[48%] rounded-2xl border border-gray-100 bg-white/50 p-4">
                   <item.icon size={20} color="#044EB8" />
                   <Typography variant="label" className="text-gray-400 mt-2">{item.label}</Typography>
-                  <Typography variant="caption" weight="bold" className="text-secondary mt-0.5" numberOfLines={1}>
+                  <Typography variant="caption" weight="bold" className="mt-0.5 text-secondary" numberOfLines={2}>
                     {item.value || "N/A"}
                   </Typography>
                 </View>
@@ -241,7 +266,7 @@ export default function DetailOffre() {
               <Typography variant="h3" font="maven" weight="bold" className="text-secondary mb-4">
                 {t('offres.description')}
               </Typography>
-              <Typography variant="body" font="noto" className="text-gray-600 leading-6 text-justify">
+              <Typography variant="body" font="noto" className="text-justify leading-6 text-gray-600">
                 {offer.description}
               </Typography>
             </View>
@@ -259,11 +284,14 @@ export default function DetailOffre() {
       </SafeAreaView>
 
       {/* Sticky Bottom Button */}
-      <View className="absolute bottom-0 w-full bg-white/80 p-6 border-t border-gray-100">
+      <View
+        className="absolute bottom-0 w-full border-t border-gray-100 bg-white/95 px-5 pt-3"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      >
         {isExpired ? (
           <View className="flex-row items-center justify-center rounded-xl bg-gray-200 px-5 py-4">
             <CalendarX2 size={20} color="#6B7280" />
-            <View className="ml-3">
+            <View className="ml-3 flex-1">
               <Typography weight="bold" className="text-gray-600">
                 {t("offres.deadlinePassed")}
               </Typography>
@@ -306,57 +334,67 @@ export default function DetailOffre() {
         onRequestClose={() => !applying && setApplicationModalVisible(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1 justify-end bg-black/50"
         >
-          <View className="rounded-t-3xl bg-white px-6 pb-8 pt-6">
-            <Typography variant="h2" font="maven" weight="bold" className="text-secondary">
-              {t("offres.applicationTitle")}
-            </Typography>
-            <Typography variant="caption" font="noto" className="mt-1 text-gray-500">
-              {offer.title} · {offer.nom_entreprise}
-            </Typography>
-
-            <Typography variant="body" font="noto" weight="semi" className="mb-2 mt-6 text-gray-700">
-              {t("offres.motivationLabel")}
-            </Typography>
-            <TextInput
-              value={motivation}
-              onChangeText={setMotivation}
-              placeholder={t("offres.motivationPlaceholder")}
-              placeholderTextColor="#98A2B3"
-              multiline
-              maxLength={1000}
-              editable={!applying}
-              textAlignVertical="top"
-              className="min-h-36 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 font-noto-reg text-base text-gray-800"
-            />
-            <View className="mt-2 flex-row justify-between">
-              <Typography variant="label" font="noto" className="flex-1 pr-3 text-gray-500">
-                {t("offres.motivationHelper")}
-              </Typography>
-              <Typography variant="label" font="noto" className="text-gray-400">
-                {motivation.length}/1000
-              </Typography>
-            </View>
-
-            <Button
-              title={t("offres.sendApplication")}
-              variant="gradient"
-              onPress={() => void handlePostuler()}
-              loading={applying}
-              disabled={!motivation.trim()}
-              className="mt-6"
-            />
-            <TouchableOpacity
-              onPress={() => setApplicationModalVisible(false)}
-              disabled={applying}
-              className="mt-3 rounded-xl bg-gray-100 py-3"
+          <View className="max-h-[92%] rounded-t-3xl bg-white">
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: 24,
+                paddingTop: 24,
+                paddingBottom: Math.max(insets.bottom, 24),
+              }}
             >
-              <Typography weight="semi" className="text-center text-gray-600">
-                {t("common.cancel")}
+              <Typography variant="h2" font="maven" weight="bold" className="text-secondary">
+                {t("offres.applicationTitle")}
               </Typography>
-            </TouchableOpacity>
+              <Typography variant="caption" font="noto" className="mt-1 text-gray-500">
+                {offer.title} · {offer.nom_entreprise}
+              </Typography>
+
+              <Typography variant="body" font="noto" weight="semi" className="mb-2 mt-6 text-gray-700">
+                {t("offres.motivationLabel")}
+              </Typography>
+              <TextInput
+                value={motivation}
+                onChangeText={setMotivation}
+                placeholder={t("offres.motivationPlaceholder")}
+                placeholderTextColor="#98A2B3"
+                multiline
+                maxLength={1000}
+                editable={!applying}
+                textAlignVertical="top"
+                className="min-h-36 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 font-noto-reg text-base text-gray-800"
+              />
+              <View className="mt-2 flex-row justify-between">
+                <Typography variant="label" font="noto" className="flex-1 pr-3 text-gray-500">
+                  {t("offres.motivationHelper")}
+                </Typography>
+                <Typography variant="label" font="noto" className="text-gray-400">
+                  {motivation.length}/1000
+                </Typography>
+              </View>
+
+              <Button
+                title={t("offres.sendApplication")}
+                variant="gradient"
+                onPress={() => void handlePostuler()}
+                loading={applying}
+                disabled={!motivation.trim()}
+                className="mt-6"
+              />
+              <TouchableOpacity
+                onPress={() => setApplicationModalVisible(false)}
+                disabled={applying}
+                className="mt-3 rounded-xl bg-gray-100 py-3"
+              >
+                <Typography weight="semi" className="text-center text-gray-600">
+                  {t("common.cancel")}
+                </Typography>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>

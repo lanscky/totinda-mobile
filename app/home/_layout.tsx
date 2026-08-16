@@ -4,10 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import '../global.css';
 
 export default function HomeLayout() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <React.Fragment>
@@ -25,9 +27,9 @@ export default function HomeLayout() {
             borderTopWidth: 0.2,
             borderTopColor: "#1D263380",
             elevation: 5,
-            height: 80,
+            height: 64 + insets.bottom,
             paddingTop: 8,
-            paddingBottom: 8,
+            paddingBottom: Math.max(insets.bottom, 8),
           },
 
           tabBarLabelStyle: {

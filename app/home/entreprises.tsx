@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import {
   ImageBackground,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Company, companyService } from "../../api/companies";
 import { CompanyCard } from "../../components/Card";
@@ -51,21 +51,21 @@ export default function Entreprises() {
     <View className="flex-1 bg-white">
       <ImageBackground
         source={require("../../assets/onboard/background_page.png")}
-        className="absolute w-full h-full"
+        className="absolute h-full w-full"
         resizeMode="cover"
       />
 
       <SafeAreaView className="flex-1">
         {/* Header */}
-        <View className="px-6 py-4 flex-row items-center">
-          <Typography variant="h3" font="maven" weight="bold" className="ml-4 text-secondary">
+        <View className="flex-row items-center px-6 pb-3 pt-4">
+          <Typography variant="h2" font="maven" weight="bold" className="text-secondary">
             {t("companies.title")}
           </Typography>
         </View>
 
         {/* Search */}
-        <View className="px-6 mt-2 mb-6">
-          <View className="h-12 bg-white rounded-xl flex-row items-center px-4 border border-gray-100 shadow-sm">
+        <View className="mb-4 mt-2 px-6">
+          <View className="h-12 flex-row items-center rounded-xl border border-gray-100 bg-white px-4 shadow-sm">
             <Search size={18} color="#9CA3AF" />
             <TextInput
               placeholder={t("companies.searchPlaceholder")}
@@ -78,7 +78,9 @@ export default function Entreprises() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -97,18 +99,19 @@ export default function Entreprises() {
           <View className="flex-row flex-wrap justify-between">
             {loading
               ? [1, 2, 3, 4].map((i) => (
-                <View key={i} className="mb-4">
-                  <CompanySkeleton />
+                <View key={i} className="mb-4 w-[48%]">
+                  <CompanySkeleton grid />
                 </View>
               ))
               : filteredEntreprises.map((item, index) => (
-                <View key={item.id} className="mb-4">
+                <View key={item.id} className="mb-4 w-[48%]">
                   <CompanyCard
                     id={item.id}
                     name={item.name}
                     logo={item.logo ?? ""}
                     industry={item.secteur || t("profile.unspecified")}
                     index={index}
+                    grid
                     onPress={() =>
                       router.push({
                         pathname: "/entreprises/[id]",

@@ -100,7 +100,16 @@
         "evaluation": {
             "title": "Évaluation finale",
             "pending": "Le stage est terminé. L’évaluation de l’entreprise n’a pas encore été publiée.",
-            "afterCompletion": "L’évaluation sera disponible ici lorsque le stage sera terminé et évalué par l’entreprise."
+            "afterCompletion": "L’évaluation sera disponible ici lorsque le stage sera terminé et évalué par l’entreprise.",
+            "downloadCertificate": "Télécharger mon attestation",
+            "certificateError": "Attestation indisponible"
+        },
+        "progress": {
+            "title": "Progression du parcours",
+            "validated": "Validées",
+            "pending": "En attente",
+            "missing": "Manquantes",
+            "informative": "Ces indicateurs sont informatifs et ne bloquent aucune fonctionnalité."
         },
         "status": {
             "upcoming": "À venir",
@@ -153,6 +162,12 @@
         "forgotPassword": "Mot de passe oublié ?",
         "loginButton": "Se connecter",
         "orContinue": "Ou continuer avec",
+        "continueWithGoogle": "Continuer avec Google",
+        "googleLoginFailed": "Connexion Google impossible",
+        "linkExistingAccount": "Lier votre compte existant",
+        "linkExistingAccountDescription": "Cette adresse e-mail possède déjà un compte Totinda. Saisissez son mot de passe pour le relier à Google en toute sécurité.",
+        "linkAccount": "Lier et continuer",
+        "accountLinkFailed": "Liaison du compte impossible",
         "noAccount": "Vous n’avez pas de compte ?",
         "register": "Inscrivez-vous",
         "missingFields": "Champs manquants",
@@ -181,6 +196,21 @@
         "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
         "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
         "unknownError": "Une erreur inconnue est survenue."
+    },
+    "profileCompletion": {
+        "title": "Profil complété à {{percentage}} %",
+        "open": "Compléter mon profil",
+        "ready": "Profil prêt pour postuler",
+        "readyDescription": "Vous pouvez envoyer vos candidatures.",
+        "missingCount_one": "Encore {{count}} information obligatoire à renseigner.",
+        "missingCount_other": "Encore {{count}} informations obligatoires à renseigner.",
+        "screenTitle": "Compléter mon profil",
+        "screenSubtitle": "Ces informations ne sont demandées qu’au moment de postuler.",
+        "identitySection": "Identité",
+        "studySection": "Parcours académique",
+        "save": "Enregistrer et continuer",
+        "saved": "Votre profil est prêt pour postuler.",
+        "required": "Ce champ est obligatoire"
     },
     "home": {
         "greeting": "Bonjour,",

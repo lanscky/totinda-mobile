@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock3,
   FileText,
+  ChartNoAxesColumnIncreasing,
   Mail,
   Target,
   Star,
@@ -16,6 +17,7 @@ import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Alert,
   ImageBackground,
   Linking,
   RefreshControl,
@@ -47,6 +49,7 @@ export default function StageDetails() {
   const [evaluation, setEvaluation] = useState<FinalEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [downloadingCertificate, setDownloadingCertificate] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchStage = useCallback(async (refresh = false) => {
@@ -76,6 +79,21 @@ export default function StageDetails() {
 
   const openConvention = async () => {
     if (stage?.convention_pdf) await Linking.openURL(stage.convention_pdf);
+  };
+
+  const downloadCertificate = async () => {
+    if (!stage) return;
+    setDownloadingCertificate(true);
+    try {
+      await stageService.downloadCertificate(stage.id);
+    } catch (error) {
+      Alert.alert(
+        t("stage.evaluation.certificateError"),
+        error instanceof Error ? error.message : t("common.networkError"),
+      );
+    } finally {
+      setDownloadingCertificate(false);
+    }
   };
 
   const status = stage ? statusStyles[stage.status] : null;
@@ -156,6 +174,27 @@ export default function StageDetails() {
               </View>
             </View>
 
+            <View className="mt-4 rounded-3xl border border-gray-100 bg-white p-5">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <ChartNoAxesColumnIncreasing size={19} color="#044EB8" />
+                  <Typography variant="caption" weight="bold" className="ml-2 text-secondary">
+                    {t("stage.progress.title")}
+                  </Typography>
+                </View>
+                <Typography variant="h3" weight="bold" className="text-primary">{stage.progress.percentage}%</Typography>
+              </View>
+              <View className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
+                <View className="h-full rounded-full bg-primary" style={{ width: `${stage.progress.percentage}%` }} />
+              </View>
+              <View className="mt-4 flex-row gap-2">
+                <ProgressBox label={t("stage.progress.validated")} value={stage.progress.validated_weeks} />
+                <ProgressBox label={t("stage.progress.pending")} value={stage.progress.pending_reports} color="#D97706" />
+                <ProgressBox label={t("stage.progress.missing")} value={stage.progress.missing_weeks} color="#DC2626" />
+              </View>
+              <Typography variant="label" className="mt-3 text-center text-gray-400">{t("stage.progress.informative")}</Typography>
+            </View>
+
             <View className={`mt-4 rounded-3xl border p-5 ${evaluation ? "border-amber-200 bg-amber-50" : "border-gray-100 bg-white"}`}>
                 <View className="flex-row items-center">
                   <Star size={20} color={evaluation ? "#D97706" : "#98A2B3"} fill={evaluation ? "#FBBF24" : "transparent"} />
@@ -171,6 +210,22 @@ export default function StageDetails() {
                     <Typography variant="caption" className="mt-3 leading-5 text-gray-700">
                       {evaluation.comments}
                     </Typography>
+                    <TouchableOpacity
+                      onPress={() => void downloadCertificate()}
+                      disabled={downloadingCertificate}
+                      className="mt-4 flex-row items-center justify-center rounded-2xl border border-amber-300 bg-white px-4 py-3"
+                    >
+                      {downloadingCertificate ? (
+                        <ActivityIndicator color="#D97706" />
+                      ) : (
+                        <>
+                          <FileText size={18} color="#D97706" />
+                          <Typography variant="caption" weight="bold" className="ml-2 text-amber-700">
+                            {t("stage.evaluation.downloadCertificate")}
+                          </Typography>
+                        </>
+                      )}
+                    </TouchableOpacity>
                   </>
                 ) : (
                   <Typography variant="caption" className="mt-3 leading-5 text-gray-500">
@@ -231,4 +286,8 @@ export default function StageDetails() {
       </SafeAreaView>
     </View>
   );
+}
+
+function ProgressBox({ label, value, color = "#1D2633" }: { label: string; value: number; color?: string }) {
+  return <View className="flex-1 items-center rounded-2xl bg-gray-50 p-3"><Typography variant="h3" weight="bold" style={{ color }}>{value}</Typography><Typography variant="label" className="mt-1 text-center text-gray-500">{label}</Typography></View>;
 }

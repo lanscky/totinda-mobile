@@ -1,6 +1,7 @@
 
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import {
   Briefcase,
   Camera,
@@ -33,6 +34,7 @@ import Toast from "react-native-toast-message";
 import { User as AuthUser } from "../../api/auth";
 import { apiRequest } from "../../api/client";
 import { Button } from "../../components/Button";
+import { ProfileCompletionCard } from "../../components/ProfileCompletionCard";
 import { useAuth } from "../../context/AuthContext";
 
 type PendingPhoto = {
@@ -43,7 +45,8 @@ type PendingPhoto = {
 
 export default function Profil() {
   const { t, i18n } = useTranslation();
-  const { user, logout, deleteAccount, updateUser, loading } = useAuth();
+  const router = useRouter();
+  const { user, logout, deleteAccount, updateUser, refreshUser, loading } = useAuth();
   const [userInfo, setUserInfo] = useState<AuthUser | null>(user);
   const [modalVisible, setModalVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -180,6 +183,8 @@ export default function Profil() {
       };
       setUserInfo(mergedUser);
       await updateUser(mergedUser);
+      const freshUser = await refreshUser().catch(() => mergedUser);
+      setUserInfo(freshUser);
       setSelectedPhoto(null);
       setModalVisible(false);
       Toast.show({ type: "success", text1: t("common.success"), text2: t("profile.photoUpdated") });
@@ -239,6 +244,8 @@ export default function Profil() {
       };
       setUserInfo(updated);
       await updateUser(updated);
+      const freshUser = await refreshUser().catch(() => updated);
+      setUserInfo(freshUser);
       Toast.show({ type: "success", text1: t("common.success"), text2: t("profile.cvUpdated") });
     } catch (error) {
       Toast.show({
@@ -319,6 +326,13 @@ export default function Profil() {
         >
           {t('profile.student')} - {userInfo?.student?.niveau || t('profile.unknownLevel')}
         </Text>
+
+        <View className="mt-6">
+          <ProfileCompletionCard
+            completion={userInfo?.profile_completion}
+            onPress={() => router.push("/profile/complete")}
+          />
+        </View>
 
         {/* Détails */}
         <View className="mt-8 space-y-4">

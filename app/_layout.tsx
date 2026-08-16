@@ -1,12 +1,14 @@
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Href, Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreenNative from "expo-splash-screen";
-import React, { useEffect } from "react";
+import * as Notifications from "expo-notifications";
+import React, { useCallback, useEffect } from "react";
 import Toast from 'react-native-toast-message';
 import { SplashScreen } from '../components/SplashScreen';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import '../i18n';
 import './global.css';
+import { notificationService } from '../api/notifications';
 
 void SplashScreenNative.preventAutoHideAsync();
 
@@ -15,11 +17,30 @@ function RootLayoutNav() {
   const router = useRouter();
   const segments = useSegments();
 
+  const openPushNotification = useCallback((response: Notifications.NotificationResponse) => {
+    if (!isAuthenticated) return;
+    const data = response.notification.request.content.data as {
+      notification_id?: number;
+      notification_type?: string;
+      stage_id?: number;
+    };
+    if (data.notification_id) {
+      void notificationService.markRead(data.notification_id).catch(() => undefined);
+    }
+    if (data.stage_id) {
+      router.push({ pathname: "/stages/[id]", params: { id: String(data.stage_id) } });
+    } else if (data.notification_type === "application_decision") {
+      router.push("/home/candidatures" as Href);
+    } else {
+      router.push("/notifications" as Href);
+    }
+  }, [isAuthenticated, router]);
+
   useEffect(() => {
     if (loading) return;
 
     const rootSegment = segments[0];
-    const isProtectedRoute = ["home", "offres", "entreprises", "stages"].includes(rootSegment);
+    const isProtectedRoute = ["home", "offres", "entreprises", "stages", "notifications", "profile"].includes(rootSegment);
     const isLoginRoute = rootSegment === "login";
 
     if (isAuthenticated && (isLoginRoute || !rootSegment)) {
@@ -28,6 +49,17 @@ function RootLayoutNav() {
       router.replace('/login/login');
     }
   }, [isAuthenticated, loading, router, segments]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(openPushNotification);
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        openPushNotification(response);
+        void Notifications.clearLastNotificationResponseAsync();
+      }
+    });
+    return () => subscription.remove();
+  }, [openPushNotification]);
 
   return (
     <Stack

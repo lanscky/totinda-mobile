@@ -31,8 +31,8 @@ export const OfferSkeleton = () => (
     </View>
 );
 
-export const CompanySkeleton = () => (
-    <View className="w-40 mr-4 bg-white rounded-3xl p-5 items-center border border-gray-50">
+export const CompanySkeleton = ({ grid = false }: { grid?: boolean }) => (
+    <View className={`${grid ? "w-full" : "w-40 mr-4"} bg-white rounded-3xl p-5 items-center border border-gray-50`}>
         <MotiSkeleton colorMode="light" radius="round" height={80} width={80} />
         <View className="h-4" />
         <MotiSkeleton colorMode="light" radius={4} height={16} width="70%" />

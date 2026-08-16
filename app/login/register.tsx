@@ -1,52 +1,38 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import {
+  BookOpen,
+  Check,
+  ChevronDown,
+  GraduationCap,
+  Lock,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react-native";
+import { MotiView } from "moti";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   ImageBackground,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { apiRequest } from "../../api/client";
+import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
+import { Typography } from "../../components/Typography";
+import { STUDY_LEVEL_GROUPS } from "../../constants/studyLevels";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const STUDY_LEVEL_GROUPS = [
-  {
-    title: "Enseignement Secondaire",
-    options: ["Humanités (Diplôme d'État / Baccalauréat RDC)"],
-  },
-  {
-    title: "Enseignement Supérieur – Système LMD (actuel)",
-    options: [
-      "Licence LMD (Bac +3)",
-      "Master LMD (Bac +5)",
-      "Doctorat LMD (Bac +8)",
-    ],
-  },
-  {
-    title: "Enseignement Supérieur – Système classique (ancien)",
-    options: [
-      "Graduat (Ancien système - Bac +3)",
-      "Licence (Ancien système - Bac +5)",
-    ],
-  },
-  {
-    title: "Enseignement Technique et Professionnel",
-    options: [
-      "Brevet d'Aptitude Professionnelle (BAP)",
-      "Brevet de Technicien (BT)",
-    ],
-  },
-] as const;
 
 export default function Register() {
   const { t } = useTranslation();
@@ -138,150 +124,197 @@ export default function Register() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={styles.background}>
-          {/* Image de fond */}
-          <ImageBackground
-            source={require("../../assets/onboard/backlogin.png")}
-            style={styles.backlogin}
-            resizeMode="cover"
+    <View className="flex-1 bg-white">
+      <ImageBackground
+        source={require("../../assets/onboard/backlogin.png")}
+        className="h-56 justify-center"
+        resizeMode="cover"
+      >
+        <SafeAreaView>
+          <View className="px-6">
+            <Image
+              source={require("../../assets/images/logo.png")}
+              className="h-16 w-32"
+              resizeMode="contain"
+            />
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === "ios" ? -48 : 0}
+      >
+        <ScrollView
+          className="-mt-8 flex-1 rounded-t-[36px] bg-white"
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 18 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 500 }}
           >
-            <View style={styles.header}>
-              <Image
-                source={require("../../assets/images/logo.png")}
-                style={styles.logo}
+            <Typography
+              variant="h1"
+              font="maven"
+              weight="bold"
+              className="text-secondary"
+            >
+              {t("login.welcomeRegister")}
+            </Typography>
+            <Typography
+              variant="body"
+              font="noto"
+              className="mt-2 text-gray-500"
+            >
+              {t("login.subtitleRegister")}
+            </Typography>
+
+            <View className="mt-8">
+              <Input
+                label={t("login.nameLabel")}
+                placeholder={t("login.nameLabel")}
+                value={nom}
+                onChangeText={setNom}
+                icon={User}
+                autoCapitalize="words"
+                autoComplete="family-name"
+                textContentType="familyName"
+              />
+              <Input
+                label={t("login.postnomLabel")}
+                placeholder={t("login.postnomLabel")}
+                value={postnom}
+                onChangeText={setPostnom}
+                icon={User}
+                autoCapitalize="words"
+              />
+              <Input
+                label={t("login.prenomLabel")}
+                placeholder={t("login.prenomLabel")}
+                value={prenom}
+                onChangeText={setPrenom}
+                icon={User}
+                autoCapitalize="words"
+                autoComplete="given-name"
+                textContentType="givenName"
+              />
+              <Input
+                label={t("login.filiereLabel")}
+                placeholder={t("login.filiereLabel")}
+                value={filiere}
+                onChangeText={setFiliere}
+                icon={BookOpen}
+                autoCapitalize="sentences"
+              />
+
+              <View className="mb-4 w-full">
+                <Typography
+                  variant="caption"
+                  font="maven"
+                  weight="med"
+                  className="mb-2 ml-1 text-secondary"
+                >
+                  {t("login.niveauLabel")}
+                </Typography>
+                <TouchableOpacity
+                  className="min-h-[54px] flex-row items-center rounded-xl border border-gray-200 bg-white px-4 py-3"
+                  onPress={() => setLevelModalVisible(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("login.selectNiveau")}
+                  activeOpacity={0.7}
+                >
+                  <GraduationCap size={20} color="#9CA3AF" />
+                  <Text
+                    className={`ml-3 flex-1 font-noto-reg text-base ${
+                      niveau ? "text-secondary" : "text-gray-400"
+                    }`}
+                    numberOfLines={2}
+                  >
+                    {niveau || t("login.selectNiveau")}
+                  </Text>
+                  <ChevronDown size={20} color="#044EB8" />
+                </TouchableOpacity>
+              </View>
+
+              <Input
+                label={t("login.emailLabel")}
+                placeholder={t("login.emailPlaceholder")}
+                value={email}
+                onChangeText={setEmail}
+                icon={Mail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+              />
+              <Input
+                label={t("login.telephone")}
+                placeholder={t("login.telephone")}
+                value={telephone}
+                onChangeText={setTelephone}
+                icon={Phone}
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                textContentType="telephoneNumber"
+              />
+              <Input
+                label={t("login.passwordLabel")}
+                placeholder={t("login.passwordPlaceholder")}
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                icon={Lock}
+                autoComplete="new-password"
+                textContentType="newPassword"
+              />
+              <Input
+                label={t("login.confirmPasswordLabel")}
+                placeholder={t("login.confirmPasswordLabel")}
+                secureTextEntry
+                value={password2}
+                onChangeText={setPassword2}
+                icon={Lock}
+                autoComplete="new-password"
+                textContentType="newPassword"
+                returnKeyType="done"
+                onSubmitEditing={handleRegister}
+              />
+
+              <Button
+                title={t("login.registerButton")}
+                variant="gradient"
+                onPress={handleRegister}
+                loading={loading}
+                className="mt-4"
               />
             </View>
-          </ImageBackground>
 
-          {/* Contenu principal */}
-          <View
-            style={{
-              width: "100%",
-              marginTop: 20,
-              paddingHorizontal: 30,
-            }}
-          >
-            <Text style={styles.textgrand}> {t("login.welcomeRegister")}</Text>
-            <Text style={[styles.textpetit, { paddingLeft: 7 }]}>
-              {t("login.subtitleRegister")}
-            </Text>
-
-            {/* Champ nom */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.nameLabel")}
-              value={nom}
-              onChangeText={setNom}
-              keyboardType="default"
-            />
-            {/* Champ postnom */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.postnomLabel")}
-              value={postnom}
-              onChangeText={setPostnom}
-              keyboardType="default"
-            />
-            {/* Champ prenom */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.prenomLabel")}
-              value={prenom}
-              onChangeText={setPrenom}
-              keyboardType="default"
-            />
-            {/* Champ filiere */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.filiereLabel")}
-              value={filiere}
-              onChangeText={setFiliere}
-              keyboardType="default"
-            />
-            {/* Sélection du niveau d'études */}
-            <TouchableOpacity
-              style={styles.selectInput}
-              onPress={() => setLevelModalVisible(true)}
-              accessibilityRole="button"
-              accessibilityLabel={t("login.selectNiveau")}
-            >
-              <Text
-                style={niveau ? styles.selectValue : styles.selectPlaceholder}
-                numberOfLines={2}
+            <View className="mb-4 mt-8 flex-row flex-wrap justify-center">
+              <Typography variant="body" font="noto" className="text-gray-600">
+                {t("login.alreadyAccount")}{" "}
+              </Typography>
+              <TouchableOpacity
+                onPress={() => router.replace("/login/login")}
+                accessibilityRole="link"
               >
-                {niveau || t("login.selectNiveau")}
-              </Text>
-              <Text style={styles.selectChevron}>⌄</Text>
-            </TouchableOpacity>
-            {/* Champ Email */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.emailLabel")}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {/* Champ téléphone */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.telephone")}
-              value={telephone}
-              onChangeText={setTelephone}
-              keyboardType="phone-pad"
-            />
-
-            {/* Champ Mot de passe */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.passwordLabel")}
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-
-            {/* Champ Confirmation mot de passe */}
-            <TextInput
-              style={styles.input}
-              placeholder={t("login.confirmPasswordLabel")}
-              secureTextEntry
-              value={password2}
-              onChangeText={setPassword2}
-            />
-
-            {/* Bouton d’enregistrement */}
-            <TouchableOpacity
-              style={{ overflow: "hidden", marginBottom: 0 }}
-              onPress={handleRegister}
-              disabled={loading}
-            >
-              <LinearGradient
-                colors={["#044EB8", "#1B81CA"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.button}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>{t("login.registerButton")}</Text>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Lien vers connexion */}
-            <Text className="text-base ml-4 text-slate-900">
-              {t("login.alreadyAccount")}{" "}
-              <Text className="font-black">
-                <Link href="/login/login">{t("login.loginLink")}</Link>
-              </Text>
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+                <Typography
+                  variant="body"
+                  font="noto"
+                  weight="bold"
+                  className="text-primary"
+                >
+                  {t("login.loginLink")}
+                </Typography>
+              </TouchableOpacity>
+            </View>
+          </MotiView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <Modal
         visible={levelModalVisible}
@@ -296,7 +329,8 @@ export default function Register() {
             onPress={() => setLevelModalVisible(false)}
             accessibilityLabel={t("common.cancel")}
           />
-          <View style={styles.modalContent}>
+          <SafeAreaView edges={["bottom"]} style={styles.modalContent}>
+            <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>{t("login.selectNiveauTitle")}</Text>
             <Text style={styles.modalSubtitle}>{t("login.selectNiveauDescription")}</Text>
 
@@ -325,7 +359,7 @@ export default function Register() {
                           {option}
                         </Text>
                         <View style={[styles.radio, selected && styles.radioSelected]}>
-                          {selected && <View style={styles.radioDot} />}
+                          {selected && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
                         </View>
                       </TouchableOpacity>
                     );
@@ -340,7 +374,7 @@ export default function Register() {
             >
               <Text style={styles.modalCancelText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
-          </View>
+          </SafeAreaView>
         </View>
       </Modal>
     </View>
@@ -348,97 +382,33 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    marginTop: 20,
-  },
-  backlogin: {
-    width: "100%",
-    marginTop: 20,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginHorizontal: 15,
-    alignItems: "center",
-  },
-  logo: {
-    width: 130,
-    height: 100,
-    resizeMode: "contain",
-    marginTop: 1,
-  },
-  textgrand: {
-    fontSize: 26,
-    fontFamily: "MavenPro-Bold",
-    color: "#1D2633",
-  },
-  textpetit: {
-    fontSize: 15,
-    marginTop: 15,
-    fontFamily: "NotoSans-Regular",
-    color: "#1D2633",
-    marginBottom: 30,
-  },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 15,
-    fontFamily: "NotoSans-Regular",
-  },
-  selectInput: {
-    width: "100%",
-    minHeight: 50,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginBottom: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  selectValue: {
-    flex: 1,
-    color: "#1D2633",
-    fontFamily: "NotoSans-Regular",
-    fontSize: 14,
-    paddingRight: 10,
-  },
-  selectPlaceholder: {
-    flex: 1,
-    color: "#8E8E93",
-    fontFamily: "NotoSans-Regular",
-    fontSize: 14,
-    paddingRight: 10,
-  },
-  selectChevron: {
-    color: "#044EB8",
-    fontSize: 24,
-    lineHeight: 24,
+  formContent: {
+    paddingHorizontal: 28,
+    paddingTop: 36,
+    paddingBottom: 28,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 40,
+    justifyContent: "flex-end",
     backgroundColor: "rgba(0, 0, 0, 0.55)",
   },
   modalContent: {
     width: "100%",
-    maxHeight: "90%",
+    maxHeight: "84%",
     backgroundColor: "#fff",
-    borderRadius: 20,
-    paddingTop: 22,
-    paddingHorizontal: 18,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 12,
+    paddingHorizontal: 20,
     paddingBottom: 16,
+  },
+  modalHandle: {
+    width: 42,
+    height: 5,
+    borderRadius: 3,
+    alignSelf: "center",
+    backgroundColor: "#D0D5DD",
+    marginBottom: 18,
   },
   modalTitle: {
     color: "#1D2633",
@@ -506,11 +476,6 @@ const styles = StyleSheet.create({
   },
   radioSelected: {
     borderColor: "#044EB8",
-  },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
     backgroundColor: "#044EB8",
   },
   modalCancelButton: {
@@ -522,20 +487,7 @@ const styles = StyleSheet.create({
   },
   modalCancelText: {
     color: "#344054",
-    fontFamily: "NotoSans-SemiBold",
-    fontSize: 14,
-  },
-  button: {
-    width: "100%",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  buttonText: {
-    color: "#fff",
-    textTransform: "uppercase",
     fontFamily: "NotoSans-Bold",
+    fontSize: 14,
   },
 });

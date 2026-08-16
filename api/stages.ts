@@ -1,4 +1,6 @@
 import { apiRequest } from "./client";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 export type StageStatus = "upcoming" | "in_progress" | "completed" | "cancelled";
 
@@ -18,7 +20,31 @@ export type StageAssignment = {
   convention_pdf: string | null;
   supervisor_name: string | null;
   supervisor_email: string | null;
+  progress: {
+    total_weeks: number;
+    elapsed_weeks: number;
+    validated_weeks: number;
+    pending_reports: number;
+    draft_reports: number;
+    missing_weeks: number;
+    percentage: number;
+  };
 };
+
+const emptyProgress: StageAssignment["progress"] = {
+  total_weeks: 0,
+  elapsed_weeks: 0,
+  validated_weeks: 0,
+  pending_reports: 0,
+  draft_reports: 0,
+  missing_weeks: 0,
+  percentage: 0,
+};
+
+const normalizeStage = (stage: StageAssignment): StageAssignment => ({
+  ...stage,
+  progress: stage.progress ?? emptyProgress,
+});
 
 export type StageReportStatus = "draft" | "submitted" | "validated";
 
@@ -60,21 +86,45 @@ export type FinalEvaluation = {
   created_at: string;
 };
 
+type StageCertificate = {
+  filename: string;
+  reference: string;
+  content_base64: string;
+};
+
 export const stageService = {
-  getById: (id: number) =>
-    apiRequest<StageAssignment>(`affectations-stage/${id}/`),
+  getById: async (id: number) =>
+    normalizeStage(await apiRequest<StageAssignment>(`affectations-stage/${id}/`)),
   getEvaluation: async (candidatureId: number) => {
     const data = await apiRequest<FinalEvaluation[] | Paginated<FinalEvaluation>>(
       `evaluations/by-candidature/${candidatureId}/`,
     );
     return normalizeList(data)[0] ?? null;
   },
+  downloadCertificate: async (stageId: number) => {
+    const certificate = await apiRequest<StageCertificate>(
+      `affectations-stage/${stageId}/attestation/`,
+    );
+    if (!FileSystem.cacheDirectory) throw new Error("Stockage temporaire indisponible.");
+    const fileUri = `${FileSystem.cacheDirectory}${certificate.filename}`;
+    await FileSystem.writeAsStringAsync(fileUri, certificate.content_base64, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(fileUri, {
+        mimeType: "application/pdf",
+        dialogTitle: "Attestation de fin de stage",
+        UTI: "com.adobe.pdf",
+      });
+    }
+    return certificate.reference;
+  },
 };
 
 export const stageReportService = {
   list: async (stageId: number) => {
     const data = await apiRequest<StageWeeklyReport[] | Paginated<StageWeeklyReport>>(
-      `rapports-stage/?affectation=${stageId}`,
+      `rapports-stage/?affectation=${stageId}&limit=1000`,
     );
     return normalizeList(data);
   },

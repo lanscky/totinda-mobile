@@ -1,6 +1,9 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
+export default ({ config }: ConfigContext): ExpoConfig => {
+  const googleIosUrlScheme = process.env.GOOGLE_IOS_URL_SCHEME;
+
+  return ({
   ...config,
   name: config.name ?? "Totinda",
   slug: config.slug ?? "archive",
@@ -21,6 +24,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     ...(config.plugins ?? []),
     "expo-secure-store",
+    ...(googleIosUrlScheme
+      ? [[
+          "react-native-nitro-google-signin",
+          { iosUrlScheme: googleIosUrlScheme },
+        ] as [string, { iosUrlScheme: string }]]
+      : []),
     [
       "expo-image-picker",
       {
@@ -32,4 +41,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
-});
+  });
+};

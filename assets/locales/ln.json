@@ -100,7 +100,16 @@
         "evaluation": {
             "title": "Evaluation ya suka",
             "pending": "Stage esili. Kompani ebimisi naino evaluation te.",
-            "afterCompletion": "Evaluation ekomonana awa soki stage esili mpe kompani epesi yango."
+            "afterCompletion": "Evaluation ekomonana awa soki stage esili mpe kompani epesi yango.",
+            "downloadCertificate": "Télécharger attestation na ngai",
+            "certificateError": "Attestation ezali te"
+        },
+        "progress": {
+            "title": "Bokoli ya stage",
+            "validated": "Endimami",
+            "pending": "Ezali kozela",
+            "missing": "Ezangi",
+            "informative": "Ba indicateurs oyo ezali kaka mpo na sango mpe ekangaka fonctionnalité moko te."
         },
         "status": {
             "upcoming": "Ekoya",
@@ -153,6 +162,12 @@
         "forgotPassword": "Obosani liloba ya sekele ?",
         "loginButton": "Kota",
         "orContinue": "To mpe kota na nzela ya",
+        "continueWithGoogle": "Koba na Google",
+        "googleLoginFailed": "Kokota na Google elongi te",
+        "linkExistingAccount": "Kangisa konte na yo",
+        "linkExistingAccountDescription": "Adresse e-mail oyo ezali déjà na konte Totinda. Komá mot de passe na yango mpo na kokangisa yango na Google na bokengi.",
+        "linkAccount": "Kangisa mpe koba",
+        "accountLinkFailed": "Kokangisa konte elongi te",
         "noAccount": "Ozali na konte te ?",
         "register": "Komisa elongi na yo",
         "missingFields": "Biteni mosusu ezali te",
@@ -181,6 +196,21 @@
         "invalidEmail": "Koma adresse email ya malamu.",
         "passwordTooShort": "Liloba ya sekele esengeli kozala na bilembo ata 8.",
         "unknownError": "Mbeba moko eyebani te ebimi."
+    },
+    "profileCompletion": {
+        "title": "Profil esili na {{percentage}} %",
+        "open": "Silisa profil na ngai",
+        "ready": "Profil ebongi mpo na kosenga mosala",
+        "readyDescription": "Okoki sikoyo kotinda candidature.",
+        "missingCount_one": "Etikali information {{count}} ya ntina.",
+        "missingCount_other": "Etikali ba informations {{count}} ya ntina.",
+        "screenTitle": "Silisa profil na ngai",
+        "screenSubtitle": "Tokosenga ba informations oyo kaka tango okolinga kotinda candidature.",
+        "identitySection": "Bomoto",
+        "studySection": "Kelasi",
+        "save": "Bomba mpe koba",
+        "saved": "Profil na yo ebongi mpo na candidature.",
+        "required": "Esengeli kokoma likambo oyo"
     },
     "home": {
         "greeting": "Mboté,",
